@@ -2,6 +2,8 @@
 
 > **TL;DR**: Clone → Build → Copy `pkg/` → Import → Use
 
+> **🤔 Why different targets?** Read our **[📖 Architecture Guide](./ARCHITECTURE.md)** to understand why web and native Rust targets have different capabilities.
+
 ## 🚀 5-Minute Setup
 
 ### 1. Get the Package
@@ -125,20 +127,36 @@ main();
 
 ## 🔧 Different Build Targets
 
+> **💡 Important**: The build target determines which JavaScript environment your WASM will work in. See the [Architecture Guide](./ARCHITECTURE.md) for technical details.
+
 ### For Browsers/Workers (Default)
+**Use for**: Chrome, Firefox, Safari, Cloudflare Workers, Deno
 ```bash
 wasm-pack build --target web
 ```
+- ✅ Uses ES modules and Web APIs
+- ✅ Works in V8 isolates (browsers, workers)
+- ✅ Zero-latency cold starts
+- ❌ No Node.js compatibility
 
 ### For Node.js
+**Use for**: Node.js applications, serverless functions on Node.js
 ```bash
 wasm-pack build --target nodejs
 ```
+- ✅ CommonJS modules compatible
+- ✅ Node.js-specific optimizations
+- ❌ Won't work in browsers or workers
+- ❌ Not recommended (use native Rust SDK instead)
 
 ### For Bundlers (Webpack, etc.)
+**Use for**: Complex build pipelines with bundlers
 ```bash
 wasm-pack build --target bundler
 ```
+- ✅ Works with Webpack, Rollup, Parcel
+- ✅ Bundler handles module resolution
+- ✅ Good for SPAs with complex builds
 
 ## 📦 What You Get
 
@@ -190,14 +208,24 @@ try {
 ### ❌ Cloudflare Worker deployment fails
 **Solution**: Use `--target web`, not `--target nodejs`
 
+### ❌ "WASM not supported" errors
+**Problem**: Using Node.js target in browser environment
+**Solution**: Rebuild with `--target web` for browsers/workers
+
+### ❌ Performance issues in Workers
+**Problem**: Blocking the V8 event loop
+**Solution**: See [Architecture Guide](./ARCHITECTURE.md) for V8 optimization tips
+
 ## 📚 Next Steps
 
 1. **Read the full docs**: [`rust-sdk/ag-ui-wasm/README.md`](./ag-ui-wasm/README.md)
-2. **Check examples**: [`rust-sdk/ag-ui-wasm/examples/`](./ag-ui-wasm/examples/)
-3. **API reference**: [`rust-sdk/ag-ui-wasm/README.md#api-reference`](./ag-ui-wasm/README.md#api-reference)
+2. **Understand the architecture**: [`rust-sdk/ARCHITECTURE.md`](./ARCHITECTURE.md)
+3. **Check examples**: [`rust-sdk/ag-ui-wasm/examples/`](./ag-ui-wasm/examples/)
+4. **API reference**: [`rust-sdk/ag-ui-wasm/README.md#api-reference`](./ag-ui-wasm/README.md#api-reference)
 
 ## 🆘 Need Help?
 
 - Check the [main README](./README.md) for detailed instructions
+- Read the [Architecture Guide](./ARCHITECTURE.md) to understand native vs. web differences
 - Look at the [worker example](./ag-ui-wasm/examples/worker/) for a complete implementation
 - Review the [API documentation](./ag-ui-wasm/README.md#api-reference) for all available methods 

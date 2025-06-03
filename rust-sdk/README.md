@@ -2,23 +2,31 @@
 
 A comprehensive Rust SDK for the AG-UI (Autonomous Agent User Interface) platform, providing both native Rust and WebAssembly interfaces for building autonomous agent applications.
 
+> **🤔 Why Two SDKs?** Native and web environments have fundamentally different capabilities and constraints. See our **[📖 Architecture Guide](./ARCHITECTURE.md)** for the complete technical explanation.
+
 ## 📦 SDK Components
 
 ### 🦀 Native Rust SDK (`ag-ui-rust`)
-- **Full-featured Rust client** for server-side applications
-- **Async/await support** with tokio
-- **Type-safe** API with comprehensive error handling
-- **HTTP client** built on reqwest
+**For: Server-side applications, CLI tools, desktop apps**
+- **Full-featured Rust client** with tokio async runtime
+- **Multi-threading support** for CPU-intensive tasks
+- **Rich ecosystem access** - use any crate from crates.io
+- **Direct system integration** - file system, databases, TCP sockets
+- **Native HTTP client** with full TLS and connection pooling
 
 ### 🌐 WebAssembly SDK (`ag-ui-wasm`)
-- **Browser-compatible** WASM bindings
-- **JavaScript/TypeScript** interop
-- **Cloudflare Workers** support
+**For: Browsers, Cloudflare Workers, edge functions, V8 isolates**
+- **Browser-compatible** WASM bindings with zero cold start
+- **V8 isolate optimized** - no tokio, no threads, no file system
+- **Web APIs only** - Fetch API, Web Streams, JavaScript interop
+- **Sandboxed security** - runs in isolated environments
 - **Modern web frameworks** integration (React, Vue, etc.)
 
 ## 🚀 Quick Start
 
 **New to AG-UI Rust SDK?** → **[📋 Integration Guide](./INTEGRATION.md)**
+
+**Need to understand the architecture?** → **[📖 Architecture Guide](./ARCHITECTURE.md)**
 
 ### For Web/Browser Projects
 ```bash
@@ -38,6 +46,7 @@ tokio = { version = "1.0", features = ["full"] }
 ## 📚 Documentation
 
 - **[🌐 WASM Integration Guide](./INTEGRATION.md)** - 5-minute setup for web projects
+- **[🏗️ Architecture Guide](./ARCHITECTURE.md)** - Why native vs. web targets differ
 - **[📖 WASM Documentation](./ag-ui-wasm/README.md)** - Complete WebAssembly SDK docs
 - **[🦀 Native Rust Documentation](./ag-ui-rust/README.md)** - Native SDK documentation
 - **[⚡ Examples](./ag-ui-wasm/examples/)** - Real-world implementation examples
@@ -45,14 +54,16 @@ tokio = { version = "1.0", features = ["full"] }
 ## 🎯 Use Cases
 
 ### 🌐 WebAssembly SDK
+**V8 Isolate Environments** (Single-threaded, sandboxed)
 - **Single Page Applications** (React, Vue, Angular)
 - **Progressive Web Apps** (PWAs)
 - **Browser Extensions**
-- **Cloudflare Workers**
-- **Edge Computing** platforms
+- **Cloudflare Workers** and edge functions
+- **Serverless platforms** (Vercel Edge, Deno Deploy)
 - **Static Site Generators** (Next.js, Nuxt, etc.)
 
 ### 🦀 Native Rust SDK
+**System Environments** (Multi-threaded, full system access)
 - **Backend Services** and APIs
 - **Command Line Tools**
 - **Desktop Applications** (Tauri, egui)
@@ -65,6 +76,7 @@ tokio = { version = "1.0", features = ["full"] }
 ```
 ag-ui/
 ├── rust-sdk/
+│   ├── ARCHITECTURE.md         # 🏗️ Technical deep-dive
 │   ├── INTEGRATION.md          # 🚀 Quick start guide
 │   ├── ag-ui-rust/             # 🦀 Native Rust SDK
 │   │   ├── src/
@@ -76,6 +88,21 @@ ag-ui/
 │       ├── pkg/                # Generated WASM output
 │       └── README.md
 ```
+
+## 🔄 **Key Architectural Differences**
+
+| Aspect | 🦀 Native | 🌐 Web/WASM |
+|--------|-----------|-------------|
+| **Runtime** | Tokio (multi-threaded) | V8 Event Loop (single-threaded) |
+| **HTTP Client** | `reqwest` | Web Fetch API |
+| **Streaming** | `tokio::stream` | Web Streams API |
+| **File System** | ✅ Full access | ❌ Sandboxed |
+| **Threading** | ✅ Multi-core | ❌ Single-threaded |
+| **Cold Start** | ~100ms | ~1ms |
+| **Bundle Size** | N/A | ~280KB WASM |
+| **Dependencies** | Full ecosystem | WASM-compatible only |
+
+> **📖 Learn More**: Read the complete [Architecture Guide](./ARCHITECTURE.md) to understand why these differences matter.
 
 ## 🔄 Development Workflow
 
@@ -119,6 +146,7 @@ cd ag-ui-wasm && cargo test && wasm-pack test --headless --firefox
 - **Add tests** for new functionality
 - **Update documentation** for API changes
 - **Ensure WASM builds** successfully with `wasm-pack`
+- **Consider V8 isolate constraints** for web target changes
 
 ## 📄 License
 
@@ -135,6 +163,7 @@ at your option.
 - **[Documentation](https://docs.ag-ui.com)** - Complete platform docs
 - **[Examples](./ag-ui-wasm/examples/)** - Implementation examples
 - **[Integration Guide](./INTEGRATION.md)** - Quick setup guide
+- **[Architecture Guide](./ARCHITECTURE.md)** - Technical deep-dive
 
 ---
 
