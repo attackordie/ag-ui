@@ -3,7 +3,7 @@ use wasm_bindgen_futures::future_to_promise;
 use web_sys::{Request, Response, ResponseInit, Headers};
 use ag_ui_wasm::{
     BaseEvent, EventType, EventData, RunAgentInput, 
-    SSEEncoder, Message, Role,
+    SSEEncoder, Role,
     core::events::{
         TextMessageStartEvent, TextMessageContentEvent, 
         TextMessageEndEvent, RunStartedEvent, RunFinishedEvent
@@ -17,10 +17,16 @@ pub fn handle_request(request: Request) -> js_sys::Promise {
     future_to_promise(async move {
         let url = request.url();
         
-        if url.contains("/awp") && request.method() == "POST" {
+        let result = if url.contains("/awp") && request.method() == "POST" {
             handle_agent_request(request).await
         } else {
             create_error_response("Not found", 404)
+        };
+        
+        // Convert Result<Response, JsValue> to Result<JsValue, JsValue>
+        match result {
+            Ok(response) => Ok(response.into()),
+            Err(e) => Err(e),
         }
     })
 }
@@ -43,17 +49,17 @@ async fn handle_agent_request(request: Request) -> Result<Response, JsValue> {
     headers.set("Access-Control-Allow-Headers", "Content-Type")?;
     
     // Create response
-    let mut init = ResponseInit::new();
-    init.status(200);
-    init.headers(&headers);
+    let init = ResponseInit::new();
+    init.set_status(200);
+    init.set_headers(&headers);
     
     Response::new_with_opt_readable_stream_and_init(Some(&stream), &init)
 }
 
 fn create_agent_stream(input: RunAgentInput) -> Result<web_sys::ReadableStream, JsValue> {
-    let encoder = SSEEncoder::new()?;
-    let thread_id = input.thread_id.clone();
-    let run_id = input.run_id.clone();
+    let encoder = SSEEncoder::new();
+    let thread_id = input.thread_id;
+    let run_id = input.run_id;
     
     let source = js_sys::Object::new();
     
@@ -69,8 +75,8 @@ fn create_agent_stream(input: RunAgentInput) -> Result<web_sys::ReadableStream, 
                 run_id: run_id.clone(),
             }),
         };
-        let encoded = encoder.encode_event(&event)?;
-        controller.enqueue_with_array_buffer_view(&encoded)?;
+        let encoded = encoder.encode_event(&event).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        controller.enqueue_with_chunk(&encoded.into())?;
         
         // Simulate message generation
         let message_id = Uuid::new_v4().to_string();
@@ -85,8 +91,8 @@ fn create_agent_stream(input: RunAgentInput) -> Result<web_sys::ReadableStream, 
                 role: Some(Role::Assistant),
             }),
         };
-        let encoded = encoder.encode_event(&event)?;
-        controller.enqueue_with_array_buffer_view(&encoded)?;
+        let encoded = encoder.encode_event(&event).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        controller.enqueue_with_chunk(&encoded.into())?;
         
         // Send message content
         let content = "Hello! I'm an AG-UI agent running in a Cloudflare Worker.";
@@ -99,8 +105,8 @@ fn create_agent_stream(input: RunAgentInput) -> Result<web_sys::ReadableStream, 
                 delta: content.to_string(),
             }),
         };
-        let encoded = encoder.encode_event(&event)?;
-        controller.enqueue_with_array_buffer_view(&encoded)?;
+        let encoded = encoder.encode_event(&event).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        controller.enqueue_with_chunk(&encoded.into())?;
         
         // TEXT_MESSAGE_END
         let event = BaseEvent {
@@ -108,11 +114,11 @@ fn create_agent_stream(input: RunAgentInput) -> Result<web_sys::ReadableStream, 
             timestamp: None,
             raw_event: None,
             data: EventData::TextMessageEnd(TextMessageEndEvent {
-                message_id,
+                message_id: message_id.clone(),
             }),
         };
-        let encoded = encoder.encode_event(&event)?;
-        controller.enqueue_with_array_buffer_view(&encoded)?;
+        let encoded = encoder.encode_event(&event).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        controller.enqueue_with_chunk(&encoded.into())?;
         
         // RUN_FINISHED
         let event = BaseEvent {
@@ -120,12 +126,12 @@ fn create_agent_stream(input: RunAgentInput) -> Result<web_sys::ReadableStream, 
             timestamp: None,
             raw_event: None,
             data: EventData::RunFinished(RunFinishedEvent {
-                thread_id,
-                run_id,
+                thread_id: thread_id.clone(),
+                run_id: run_id.clone(),
             }),
         };
-        let encoded = encoder.encode_event(&event)?;
-        controller.enqueue_with_array_buffer_view(&encoded)?;
+        let encoded = encoder.encode_event(&event).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        controller.enqueue_with_chunk(&encoded.into())?;
         
         // Close stream
         controller.close()?;
@@ -139,7 +145,7 @@ fn create_agent_stream(input: RunAgentInput) -> Result<web_sys::ReadableStream, 
 }
 
 fn create_error_response(message: &str, status: u16) -> Result<Response, JsValue> {
-    let mut init = ResponseInit::new();
-    init.status(status);
+    let init = ResponseInit::new();
+    init.set_status(status);
     Response::new_with_opt_str_and_init(Some(message), &init)
 } 
