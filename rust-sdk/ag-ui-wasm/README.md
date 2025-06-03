@@ -11,17 +11,318 @@ A Rust implementation of the Agent-User Interaction Protocol (AG-UI) designed sp
 - ⚡ **WASM-first Design**: Optimized for WebAssembly execution
 - 🛡️ **Type-safe**: Full Rust type safety with WASM bindings
 
-## Installation
+## 🚀 Installation & Import
 
-Add this to your `Cargo.toml`:
+### Option 1: Pre-built Package (Recommended)
+
+If you just want to use the SDK without building from source:
+
+```bash
+# Clone the repository
+git clone https://github.com/attackordie/ag-ui.git
+cd ag-ui/rust-sdk/ag-ui-wasm
+
+# Build the package
+wasm-pack build --target web
+
+# Copy pkg/ to your project
+cp -r pkg/ /path/to/your/project/node_modules/ag-ui-wasm/
+```
+
+### Option 2: Git Dependency (Rust Projects)
+
+Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ag-ui-wasm = "0.1.0"
+ag-ui-wasm = { git = "https://github.com/attackordie/ag-ui.git", path = "rust-sdk/ag-ui-wasm" }
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 web-sys = "0.3"
+js-sys = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
 ```
+
+### Option 3: Git Submodule
+
+```bash
+# Add as submodule
+git submodule add https://github.com/attackordie/ag-ui.git deps/ag-ui
+
+# Build WASM package
+cd deps/ag-ui/rust-sdk/ag-ui-wasm
+wasm-pack build --target web --out-dir ../../../../pkg/ag-ui-wasm
+
+# The package is now available in pkg/ag-ui-wasm/
+```
+
+## 📦 Import in Different Environments
+
+### JavaScript/TypeScript (ES Modules)
+
+```javascript
+// After copying pkg/ to your project
+import init, * as ag_ui from './pkg/ag_ui_wasm.js';
+
+// Initialize the WASM module
+await init();
+
+// Create an agent
+const agent = new ag_ui.WebAgent('https://your-api.com/awp');
+```
+
+### JavaScript (CommonJS)
+
+```javascript
+const ag_ui = require('./pkg/ag_ui_wasm.js');
+
+async function main() {
+  await ag_ui.default(); // Initialize WASM
+  const agent = new ag_ui.WebAgent('https://your-api.com/awp');
+}
+```
+
+### TypeScript with Types
+
+```typescript
+import init, * as ag_ui from './pkg/ag_ui_wasm.js';
+// Types are automatically loaded from ag_ui_wasm.d.ts
+
+await init();
+
+const agent = new ag_ui.WebAgent('https://your-api.com/awp');
+const input: ag_ui.RunAgentInput = {
+  thread_id: 'thread-1',
+  run_id: 'run-1'
+};
+```
+
+### Cloudflare Workers
+
+#### Method 1: Copy Package
+
+```bash
+# Build and copy to worker
+wasm-pack build --target web
+cp -r pkg/ /path/to/worker/node_modules/ag-ui-wasm/
+```
+
+```javascript
+// worker.js
+import * as ag_ui from 'ag-ui-wasm';
+
+export default {
+  async fetch(request, env, ctx) {
+    const agent = new ag_ui.WebAgent(env.AG_UI_ENDPOINT);
+    // Use agent...
+  }
+};
+```
+
+#### Method 2: Wrangler Configuration
+
+Add to your `wrangler.toml`:
+
+```toml
+[build]
+command = "wasm-pack build --target web ../ag-ui/rust-sdk/ag-ui-wasm"
+
+[[rules]]
+type = "ESModule"
+globs = ["**/*.wasm"]
+fallthrough = true
+```
+
+### Browser (Vanilla JS)
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <script type="module">
+    import init, * as ag_ui from './pkg/ag_ui_wasm.js';
+    
+    async function run() {
+      await init();
+      
+      const agent = new ag_ui.WebAgent('https://api.example.com/awp');
+      const result = await agent.run_agent_js({
+        thread_id: 'thread-1',
+        run_id: 'run-1'
+      });
+      
+      console.log(result);
+    }
+    
+    run();
+  </script>
+</head>
+<body>
+  <h1>AG-UI WASM Example</h1>
+</body>
+</html>
+```
+
+### React/Next.js
+
+```typescript
+// hooks/useAgUi.ts
+import { useEffect, useState } from 'react';
+import type * as ag_ui from '../pkg/ag_ui_wasm.js';
+
+export function useAgUi() {
+  const [agUi, setAgUi] = useState<typeof ag_ui | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadWasm() {
+      try {
+        const ag_ui = await import('../pkg/ag_ui_wasm.js');
+        await ag_ui.default(); // Initialize WASM
+        setAgUi(ag_ui);
+      } catch (error) {
+        console.error('Failed to load AG-UI WASM:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadWasm();
+  }, []);
+
+  return { agUi, isLoading };
+}
+```
+
+```tsx
+// components/AgentRunner.tsx
+import { useAgUi } from '../hooks/useAgUi';
+
+export function AgentRunner() {
+  const { agUi, isLoading } = useAgUi();
+
+  const runAgent = async () => {
+    if (!agUi) return;
+
+    const agent = new agUi.WebAgent('https://api.example.com/awp');
+    const result = await agent.run_agent_js({
+      thread_id: 'thread-1',
+      run_id: 'run-1'
+    });
+    
+    console.log(result);
+  };
+
+  if (isLoading) return <div>Loading AG-UI...</div>;
+
+  return (
+    <button onClick={runAgent}>
+      Run Agent
+    </button>
+  );
+}
+```
+
+### Vite
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  server: {
+    fs: {
+      allow: ['..'] // Allow access to parent directories for pkg/
+    }
+  },
+  optimizeDeps: {
+    exclude: ['ag_ui_wasm'] // Don't pre-bundle WASM
+  }
+});
+```
+
+```typescript
+// main.ts
+import init, * as ag_ui from '../rust-sdk/ag-ui-wasm/pkg/ag_ui_wasm.js';
+
+async function main() {
+  await init();
+  
+  const agent = new ag_ui.WebAgent('https://api.example.com/awp');
+  // Use agent...
+}
+
+main();
+```
+
+### Webpack
+
+```javascript
+// webpack.config.js
+module.exports = {
+  experiments: {
+    asyncWebAssembly: true,
+  },
+  module: {
+    rules: [
+      {
+        test: /\.wasm$/,
+        type: 'webassembly/async',
+      },
+    ],
+  },
+};
+```
+
+## 🔧 Build Instructions
+
+### Prerequisites
+
+- **Rust 1.70+**: [Install Rust](https://rustup.rs/)
+- **wasm-pack**: [Install wasm-pack](https://rustwasm.github.io/wasm-pack/installer/)
+
+### Building the Package
+
+```bash
+# Clone the repository
+git clone https://github.com/attackordie/ag-ui.git
+cd ag-ui/rust-sdk/ag-ui-wasm
+
+# Build for web (browsers/workers)
+wasm-pack build --target web
+
+# Build for Node.js
+wasm-pack build --target nodejs
+
+# Build for bundlers (webpack, etc.)
+wasm-pack build --target bundler
+
+# The built package will be in pkg/
+```
+
+### Generated Files
+
+After building, you'll find these files in `pkg/`:
+
+```
+pkg/
+├── ag_ui_wasm.js          # JavaScript bindings
+├── ag_ui_wasm_bg.wasm     # WebAssembly binary
+├── ag_ui_wasm.d.ts        # TypeScript definitions
+├── package.json           # NPM package metadata
+└── README.md              # Package documentation
+```
+
+## 📋 Package Contents
+
+The generated `pkg/` directory contains everything you need:
+
+- **`ag_ui_wasm.js`** - Main JavaScript module with bindings
+- **`ag_ui_wasm_bg.wasm`** - The compiled WebAssembly binary
+- **`ag_ui_wasm.d.ts`** - TypeScript type definitions
+- **`package.json`** - NPM package configuration
+- **`.gitignore`** - Recommended git ignore patterns
 
 ## Quick Start
 
@@ -192,6 +493,45 @@ wasm-pack test --headless --chrome
 - **Backpressure**: Use ReadableStream's built-in backpressure handling
 - **CPU Limits**: Be aware of 10-50ms CPU burst limits in Workers
 - **Memory**: Stream processing to avoid buffering entire responses
+
+## Troubleshooting
+
+### Common Issues
+
+#### "Cannot resolve module" errors
+
+Make sure you've built the WASM package:
+```bash
+wasm-pack build --target web
+```
+
+#### TypeScript compilation errors
+
+Ensure the `.d.ts` file is in your TypeScript include path:
+```json
+{
+  "compilerOptions": {
+    "typeRoots": ["./pkg", "./node_modules/@types"]
+  }
+}
+```
+
+#### Cloudflare Worker deployment failures
+
+- Use `--target web` not `--target nodejs`
+- Check your wrangler.toml configuration
+- Ensure WASM file size is under limits
+
+#### Browser CORS issues
+
+WASM modules must be served over HTTP/HTTPS, not file:// protocol.
+
+### Debug Mode
+
+Build with debug info for development:
+```bash
+wasm-pack build --dev --target web
+```
 
 ## Error Handling
 
