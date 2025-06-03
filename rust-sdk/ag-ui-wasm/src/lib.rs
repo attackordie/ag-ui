@@ -14,10 +14,14 @@ pub mod error;
 // Re-export commonly used types
 pub use client::web_agent::WebAgent;
 pub use core::{
-    events::{BaseEvent, EventType},
+    events::{
+        BaseEvent, EventType, EventData,
+        TextMessageStartEvent, TextMessageContentEvent, 
+        TextMessageEndEvent, RunStartedEvent, RunFinishedEvent
+    },
     types::{Message, RunAgentInput, State, Role},
 };
-pub use encoder::SseEncoder;
+pub use encoder::SseEncoder as SSEEncoder;
 pub use error::{AgUiError, Result};
 pub use stream::EventStream;
 

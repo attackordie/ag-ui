@@ -38,7 +38,8 @@ fn test_base_event_creation() {
 
 #[wasm_bindgen_test]
 fn test_sse_encoder() {
-    let encoder = SSEEncoder::new().unwrap();
-    let data = encoder.encode_raw("test data").unwrap();
+    let encoder = SSEEncoder::new();
+    let message = "test data";
+    let data = encoder.encode_message_js(message);
     assert!(data.length() > 0);
 } 

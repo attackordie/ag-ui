@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>AG-UI WASM Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #output {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005c9a;
+        }
+    </style>
+</head>
+<body>
+    <h1>AG-UI WASM SDK Test</h1>
+    <p>This page tests the compiled AG-UI WASM package.</p>
+    
+    <div>
+        <button onclick="testBasicFunctionality()">Test Basic Functionality</button>
+        <button onclick="testSSEEncoder()">Test SSE Encoder</button>
+        <button onclick="testEventCreation()">Test Event Creation</button>
+        <button onclick="testWebAgent()">Test Web Agent</button>
+    </div>
+    
+    <div id="output"></div>
+
+    <script type="module">
+        import init, * as ag_ui from './pkg/ag_ui_wasm.js';
+        
+        async function initWasm() {
+            await init();
+            
+            // Make ag_ui available globally for button onclick handlers
+            window.ag_ui = ag_ui;
+            
+            log('AG-UI WASM SDK loaded successfully!');
+            log('Version: ' + ag_ui.VERSION);
+        }
+        
+        function log(message) {
+            const output = document.getElementById('output');
+            output.textContent += new Date().toISOString() + ': ' + message + '\n';
+        }
+        
+        window.testBasicFunctionality = function() {
+            try {
+                log('Testing basic functionality...');
+                
+                // Test message creation
+                const message = new ag_ui.Message(ag_ui.Role.User, "Hello, world!");
+                log('Created message: ' + JSON.stringify({
+                    id: message.id,
+                    role: message.role,
+                    content: message.content
+                }));
+                
+                // Test RunAgentInput
+                const input = new ag_ui.RunAgentInput("thread-123", "run-456");
+                log('Created RunAgentInput: ' + JSON.stringify({
+                    thread_id: input.thread_id,
+                    run_id: input.run_id
+                }));
+                
+                log('Basic functionality test completed successfully!');
+            } catch (error) {
+                log('Error in basic functionality test: ' + error.message);
+            }
+        };
+        
+        window.testSSEEncoder = function() {
+            try {
+                log('Testing SSE Encoder...');
+                
+                const encoder = new ag_ui.SSEEncoder();
+                log('Created SSE Encoder');
+                
+                const message = "Hello from SSE!";
+                const encoded = encoder.encodeMessage(message);
+                log('Encoded message length: ' + encoded.length + ' bytes');
+                
+                // Convert Uint8Array to string to see the content
+                const decoder = new TextDecoder();
+                const decodedString = decoder.decode(encoded);
+                log('Encoded content: ' + JSON.stringify(decodedString));
+                
+                log('SSE Encoder test completed successfully!');
+            } catch (error) {
+                log('Error in SSE Encoder test: ' + error.message);
+            }
+        };
+        
+        window.testEventCreation = function() {
+            try {
+                log('Testing Event Creation...');
+                
+                // Create a text message content event
+                const event = ag_ui.BaseEvent.text_message_content("msg-123", "Hello from event!");
+                log('Created event type: ' + event.event_type);
+                log('Event timestamp: ' + (event.timestamp ? event.timestamp : 'none'));
+                
+                log('Event creation test completed successfully!');
+            } catch (error) {
+                log('Error in event creation test: ' + error.message);
+            }
+        };
+        
+        window.testWebAgent = function() {
+            try {
+                log('Testing Web Agent...');
+                
+                const agent = new ag_ui.WebAgent("https://api.example.com/awp");
+                log('Created WebAgent with endpoint: https://api.example.com/awp');
+                
+                log('Note: Not making actual HTTP request in this test');
+                log('Web Agent test completed successfully!');
+            } catch (error) {
+                log('Error in Web Agent test: ' + error.message);
+            }
+        };
+        
+        // Initialize when page loads
+        initWasm().catch(error => {
+            log('Failed to initialize WASM: ' + error.message);
+        });
+    </script>
+</body>
+</html> 
