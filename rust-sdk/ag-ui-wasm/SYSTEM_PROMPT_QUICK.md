@@ -1,153 +1,244 @@
 # AG-UI WASM SDK Quick Reference
 
-## Installation
+**This is a Rust project** that compiles to WASM. Development happens in Rust, JavaScript is only for loading the WASM binary.
+
+## Rust Development
+
+### Build WASM Package
 ```bash
-# Build and copy package
-git clone https://github.com/attackordie/ag-ui.git temp-ag-ui
-cd temp-ag-ui/rust-sdk/ag-ui-wasm && wasm-pack build --target web
-cp -r pkg/ ../../your-project/src/lib/ag-ui-wasm/
-rm -rf temp-ag-ui
+# Primary build command
+wasm-pack build --target web
+
+# For different environments
+wasm-pack build --target web      # Browsers, Cloudflare Workers  
+wasm-pack build --target nodejs   # Node.js
+wasm-pack build --target bundler  # Webpack, Rollup
 ```
 
-## Basic Usage
-```typescript
-import init, * as ag_ui from './lib/ag-ui-wasm/pkg/ag_ui_wasm.js';
+### Basic Rust Structure
+```rust
+// src/lib.rs
+use wasm_bindgen::prelude::*;
+use web_sys::*;
 
-// ALWAYS initialize first
-await init();
+#[wasm_bindgen]
+pub struct WebAgent {
+    endpoint: String,
+}
 
-// Create agent
-const agent = new ag_ui.WebAgent('https://your-api.com/awp');
-
-// Run agent
-const result = await agent.run_agent_js({
-  thread_id: 'thread-' + Date.now(),
-  run_id: 'run-' + Date.now(),
-  message: 'Hello!'
-});
-```
-
-## React Hook
-```typescript
-import { useEffect, useState } from 'react';
-
-export function useAgUi(endpoint: string) {
-  const [agent, setAgent] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      const ag_ui = await import('./lib/ag-ui-wasm/pkg/ag_ui_wasm.js');
-      await ag_ui.default();
-      setAgent(new ag_ui.WebAgent(endpoint));
-      setIsLoading(false);
+#[wasm_bindgen]
+impl WebAgent {
+    #[wasm_bindgen(constructor)]
+    pub fn new(endpoint: String) -> WebAgent {
+        WebAgent { endpoint }
     }
-    load();
-  }, [endpoint]);
 
-  return { agent, isLoading };
+    #[wasm_bindgen]
+    pub async fn run_agent_js(&self, input: JsValue) -> Result<ReadableStream, JsValue> {
+        // All logic implemented in Rust
+        self.run_agent_internal(input).await
+    }
 }
 ```
 
-## Cloudflare Worker
-```typescript
-import * as ag_ui from './lib/ag-ui-wasm/pkg/ag_ui_wasm.js';
+### Using Web APIs from Rust
+```rust
+use web_sys::{Request, RequestInit, Response};
+use wasm_bindgen_futures::JsFuture;
+
+async fn make_request(url: &str) -> Result<Response, JsValue> {
+    let mut opts = RequestInit::new();
+    opts.method("POST");
+    
+    let request = Request::new_with_str_and_init(url, &opts)?;
+    let window = web_sys::window().unwrap();
+    let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
+    
+    Ok(resp_value.dyn_into()?)
+}
+```
+
+### Streaming in Rust
+```rust
+use web_sys::{ReadableStream, ReadableStreamDefaultController};
+use wasm_bindgen::closure::Closure;
+
+pub fn create_stream() -> Result<ReadableStream, JsValue> {
+    let source = js_sys::Object::new();
+    
+    let start = Closure::wrap(Box::new(
+        move |controller: ReadableStreamDefaultController| -> Result<(), JsValue> {
+            // Rust streaming logic
+            let data = create_sse_data()?;
+            controller.enqueue_with_array_buffer_view(&data)?;
+            Ok(())
+        }
+    ) as Box<dyn FnMut(_) -> Result<(), JsValue>>);
+    
+    js_sys::Reflect::set(&source, &"start".into(), start.as_ref())?;
+    start.forget();
+    
+    ReadableStream::new_with_underlying_source(&source)
+}
+```
+
+### Error Handling in Rust
+```rust
+#[derive(Debug)]
+#[wasm_bindgen]
+pub struct AgUiError {
+    message: String,
+}
+
+#[wasm_bindgen]
+impl AgUiError {
+    #[wasm_bindgen(constructor)]
+    pub fn new(message: String) -> AgUiError {
+        AgUiError { message }
+    }
+}
+
+impl From<JsValue> for AgUiError {
+    fn from(js_val: JsValue) -> Self {
+        AgUiError::new(format!("{:?}", js_val))
+    }
+}
+```
+
+### Essential Cargo.toml Dependencies
+```toml
+[dependencies]
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+web-sys = { version = "0.3", features = [
+  "console", "Request", "Response", "ReadableStream", 
+  "Headers", "Fetch", "Window", "WorkerGlobalScope"
+]}
+js-sys = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+```
+
+## JavaScript Shim (Minimal Usage Only)
+
+### WASM Loading Only
+```javascript
+// Minimal shim - ONLY for loading WASM
+import init, * as ag_ui from './pkg/ag_ui_wasm.js';
+
+// Initialize WASM (required once)
+await init();
+
+// All functionality is Rust-compiled WASM
+const agent = new ag_ui.WebAgent('https://your-api.com/awp');
+```
+
+### Cloudflare Worker (Minimal)
+```javascript
+// worker.js - minimal loading shim
+import * as ag_ui from './pkg/ag_ui_wasm.js';
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request, env) {
     const agent = new ag_ui.WebAgent(env.AG_UI_ENDPOINT);
-    const stream = await agent.run_agent_js({
-      thread_id: crypto.randomUUID(),
-      run_id: crypto.randomUUID(),
-      message: await request.text()
-    });
-    
-    return new Response(stream, {
-      headers: { 'Content-Type': 'text/event-stream' }
-    });
+    return await agent.run_agent_js(await request.json());
   }
 };
 ```
 
-## Stream Processing
-```typescript
-async function processStream(stream: ReadableStream) {
-  const reader = stream.getReader();
-  const decoder = new TextDecoder();
-  
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split('\n');
-      
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          if (data === '[DONE]') return;
-          
-          const event = JSON.parse(data);
-          console.log('Event:', event);
-        }
-      }
-    }
-  } finally {
-    reader.releaseLock();
-  }
-}
+### Browser (Minimal)
+```html
+<script type="module">
+  import init, * as ag_ui from './pkg/ag_ui_wasm.js';
+  await init();
+  window.agUi = ag_ui;
+</script>
+```
+
+## Rust Testing
+```bash
+# Test in browser environment
+wasm-pack test --headless --chrome
+
+# Build and test
+wasm-pack build && wasm-pack test --headless --chrome
+```
+
+## Debugging from Rust
+```rust
+use web_sys::console;
+
+// Debug output from Rust
+console::log_1(&"Debug from Rust".into());
+
+// Complex debugging
+let obj = js_sys::Object::new();
+js_sys::Reflect::set(&obj, &"key".into(), &"value".into()).unwrap();
+console::log_1(&obj);
 ```
 
 ## Essential Rules
-1. **Always `await init()` first** before using any AG-UI functions
-2. **Use `--target web`** when building with wasm-pack
-3. **Handle streams properly** with getReader() and releaseLock()
-4. **Validate endpoints** before creating agents
-5. **Wrap in try-catch** for error handling
 
-## Build Configs
+1. **This is a Rust project** - JavaScript is only for WASM loading
+2. **Use web-sys** for all Web API access from Rust  
+3. **No Tokio** - use Web Streams and Fetch API from Rust
+4. **Build with wasm-pack** - not regular cargo build
+5. **All business logic in Rust** - never in JavaScript
 
-### Vite
-```typescript
-export default defineConfig({
-  optimizeDeps: { exclude: ['ag_ui_wasm'] },
-  server: { fs: { allow: ['..', './src'] } }
-});
+## Common Rust Patterns
+
+### Async in WASM
+```rust
+use wasm_bindgen_futures::JsFuture;
+
+async fn async_rust_function() -> Result<String, JsValue> {
+    let promise = some_web_api();
+    let result = JsFuture::from(promise).await?;
+    Ok(result.as_string().unwrap_or_default())
+}
 ```
 
-### Next.js
-```javascript
-module.exports = {
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.experiments = { asyncWebAssembly: true };
+### Type Conversion
+```rust
+// Rust to JS
+impl From<MyRustType> for JsValue {
+    fn from(val: MyRustType) -> Self {
+        serde_wasm_bindgen::to_value(&val).unwrap()
     }
-    return config;
-  }
-};
-```
+}
 
-### TypeScript
-```json
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "typeRoots": ["./src/lib/ag-ui-wasm/pkg"]
-  }
+// JS to Rust  
+impl TryFrom<JsValue> for MyRustType {
+    type Error = JsValue;
+    
+    fn try_from(val: JsValue) -> Result<Self, Self::Error> {
+        serde_wasm_bindgen::from_value(val)
+    }
 }
 ```
 
-## Error Handling
-```typescript
-try {
-  const result = await agent.run_agent_js(input);
-} catch (error) {
-  if (error.message.includes('fetch')) {
-    throw new Error('Network error');
-  }
-  throw new Error(`Agent error: ${error}`);
-}
+## Build Optimization
+```toml
+# Cargo.toml
+[profile.release]
+opt-level = "s"  # Optimize for size
+lto = true       # Link-time optimization
+
+[features]
+default = []
+wee_alloc = ["wee_alloc"]  # Smaller allocator
 ```
 
-This is a Rust WASM SDK optimized for V8 isolates (browsers/Cloudflare Workers). It uses Web APIs (Fetch, Streams, SSE) instead of native Rust networking libraries. 
+## Project Structure
+```
+rust-sdk/ag-ui-wasm/
+├── src/
+│   ├── lib.rs          # Main Rust entry point
+│   ├── client.rs       # WebAgent in Rust
+│   ├── events.rs       # Event types in Rust  
+│   └── streaming.rs    # Stream handling in Rust
+├── Cargo.toml          # Rust dependencies
+└── pkg/               # Generated WASM (after build)
+```
+
+**Remember**: This is a Rust WebAssembly project. All development happens in Rust using web-sys bindings. JavaScript/TypeScript is only a minimal shim to load the WASM binary. 
