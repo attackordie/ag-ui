@@ -2,6 +2,8 @@
 
 A Rust implementation of the Agent-User Interaction Protocol (AG-UI) designed specifically for V8 isolates like browsers and Cloudflare Workers.
 
+> **🤔 Why a separate WASM SDK?** V8 isolates have strict constraints that require a different approach than native Rust. Read our **[📖 Architecture Guide](../ARCHITECTURE.md)** for the complete technical explanation.
+
 ## Features
 
 - 🌐 **Web-native**: Built on Web APIs (Fetch, Streams, SSE)
@@ -391,6 +393,8 @@ This SDK is designed to work within V8 isolate constraints:
 - ✅ Single-threaded execution model
 - ✅ No file system or network socket access
 
+> **📖 Learn More**: Read the [Architecture Guide](../ARCHITECTURE.md) for a complete technical deep-dive into these constraints and why they matter.
+
 ### Key Components
 
 1. **WebAgent** - HTTP client using Fetch API
@@ -494,6 +498,8 @@ wasm-pack test --headless --chrome
 - **CPU Limits**: Be aware of 10-50ms CPU burst limits in Workers
 - **Memory**: Stream processing to avoid buffering entire responses
 
+> **📖 Deep Dive**: See the [Architecture Guide](../ARCHITECTURE.md) for detailed performance optimization strategies for V8 isolates.
+
 ## Troubleshooting
 
 ### Common Issues
@@ -554,6 +560,8 @@ This SDK is specifically designed for V8 isolate environments:
 - **Browsers**: Full compatibility  
 - **Deno**: Compatible (V8-based)
 - **Node.js**: Limited compatibility (prefer native Rust for Node.js)
+
+> **📖 Why these differences?** Read the [Architecture Guide](../ARCHITECTURE.md) to understand the fundamental differences between V8 isolates and native environments.
 
 ## Contributing
 
