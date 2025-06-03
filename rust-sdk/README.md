@@ -1,78 +1,141 @@
 # AG-UI Rust SDK
 
-This directory contains Rust implementations of the Agent-User Interaction Protocol (AG-UI).
+A comprehensive Rust SDK for the AG-UI (Autonomous Agent User Interface) platform, providing both native Rust and WebAssembly interfaces for building autonomous agent applications.
 
-## Available SDKs
+## 📦 SDK Components
 
-### `ag-ui-wasm/` - V8 Isolate SDK (WASM)
+### 🦀 Native Rust SDK (`ag-ui-rust`)
+- **Full-featured Rust client** for server-side applications
+- **Async/await support** with tokio
+- **Type-safe** API with comprehensive error handling
+- **HTTP client** built on reqwest
 
-A WebAssembly-based SDK specifically designed for V8 isolate environments like browsers and Cloudflare Workers.
+### 🌐 WebAssembly SDK (`ag-ui-wasm`)
+- **Browser-compatible** WASM bindings
+- **JavaScript/TypeScript** interop
+- **Cloudflare Workers** support
+- **Modern web frameworks** integration (React, Vue, etc.)
 
-**Key Features:**
-- Web Streams API for streaming
-- Fetch API for HTTP requests
-- No native dependencies (Tokio-free)
-- Optimized for V8 isolates
-- Real-time SSE streaming
+## 🚀 Quick Start
 
-**Target Environments:**
-- Cloudflare Workers
-- Browser environments
-- Deno
-- Any V8-based runtime
+**New to AG-UI Rust SDK?** → **[📋 Integration Guide](./INTEGRATION.md)**
 
-[View Documentation →](./ag-ui-wasm/README.md)
-
-## Getting Started
-
-Choose the appropriate SDK based on your deployment target:
-
-- **Cloudflare Workers/Browser**: Use `ag-ui-wasm`
-- **Native Rust applications**: Use `ag-ui-wasm` (future: dedicated native SDK)
-
-## Project Structure
-
-```
-rust-sdk/
-├── ag-ui-wasm/           # WASM SDK for V8 isolates
-│   ├── src/              # Source code
-│   ├── examples/         # Usage examples
-│   └── tests/            # Test suite
-└── README.md             # This file
-```
-
-## Development
-
-Each SDK has its own development workflow. See the individual README files for specific instructions.
-
-### Prerequisites
-
-- Rust 1.70+
-- wasm-pack (for WASM builds)
-- Node.js (for testing)
-
-### Building All SDKs
-
+### For Web/Browser Projects
 ```bash
-# Build WASM SDK
 cd ag-ui-wasm
 wasm-pack build --target web
+# Copy pkg/ to your project
 ```
 
-## Contributing
+### For Rust Projects
+```toml
+# Cargo.toml
+[dependencies]
+ag-ui-rust = { path = "../ag-ui-rust" }
+tokio = { version = "1.0", features = ["full"] }
+```
 
-We welcome contributions to any of the Rust SDKs. Please ensure your changes:
+## 📚 Documentation
 
-1. Work within the constraints of the target environment
-2. Include appropriate tests
-3. Follow Rust best practices
-4. Update documentation as needed
+- **[🌐 WASM Integration Guide](./INTEGRATION.md)** - 5-minute setup for web projects
+- **[📖 WASM Documentation](./ag-ui-wasm/README.md)** - Complete WebAssembly SDK docs
+- **[🦀 Native Rust Documentation](./ag-ui-rust/README.md)** - Native SDK documentation
+- **[⚡ Examples](./ag-ui-wasm/examples/)** - Real-world implementation examples
 
-## License
+## 🎯 Use Cases
 
-All Rust SDKs are licensed under either of:
+### 🌐 WebAssembly SDK
+- **Single Page Applications** (React, Vue, Angular)
+- **Progressive Web Apps** (PWAs)
+- **Browser Extensions**
+- **Cloudflare Workers**
+- **Edge Computing** platforms
+- **Static Site Generators** (Next.js, Nuxt, etc.)
 
-- Apache License, Version 2.0
-- MIT License
+### 🦀 Native Rust SDK
+- **Backend Services** and APIs
+- **Command Line Tools**
+- **Desktop Applications** (Tauri, egui)
+- **Microservices** and serverless functions
+- **Data Processing** pipelines
+- **System Integration** tools
 
-at your option. 
+## 🏗️ Architecture
+
+```
+ag-ui/
+├── rust-sdk/
+│   ├── INTEGRATION.md          # 🚀 Quick start guide
+│   ├── ag-ui-rust/             # 🦀 Native Rust SDK
+│   │   ├── src/
+│   │   ├── examples/
+│   │   └── README.md
+│   └── ag-ui-wasm/             # 🌐 WebAssembly SDK
+│       ├── src/
+│       ├── examples/
+│       ├── pkg/                # Generated WASM output
+│       └── README.md
+```
+
+## 🔄 Development Workflow
+
+### 1. Building Both SDKs
+```bash
+# Native Rust SDK
+cd ag-ui-rust && cargo build
+
+# WebAssembly SDK
+cd ag-ui-wasm && wasm-pack build --target web
+```
+
+### 2. Running Examples
+```bash
+# Test native SDK
+cd ag-ui-rust && cargo run --example basic
+
+# Test WASM in browser
+cd ag-ui-wasm/examples/worker && npm install && npm run dev
+```
+
+### 3. Running Tests
+```bash
+# Test both SDKs
+cd ag-ui-rust && cargo test
+cd ag-ui-wasm && cargo test && wasm-pack test --headless --firefox
+```
+
+## 🤝 Contributing
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Make** your changes in either `ag-ui-rust/` or `ag-ui-wasm/`
+4. **Test** your changes (`cargo test` and `wasm-pack test`)
+5. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+6. **Push** to the branch (`git push origin feature/amazing-feature`)
+7. **Open** a Pull Request
+
+### Development Guidelines
+- **Follow Rust conventions** (rustfmt, clippy)
+- **Add tests** for new functionality
+- **Update documentation** for API changes
+- **Ensure WASM builds** successfully with `wasm-pack`
+
+## 📄 License
+
+This project is dual-licensed under either:
+
+- **MIT License** ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+- **Apache License, Version 2.0** ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+
+at your option.
+
+## 🔗 Links
+
+- **[AG-UI Platform](https://github.com/attackordie/ag-ui)** - Main repository
+- **[Documentation](https://docs.ag-ui.com)** - Complete platform docs
+- **[Examples](./ag-ui-wasm/examples/)** - Implementation examples
+- **[Integration Guide](./INTEGRATION.md)** - Quick setup guide
+
+---
+
+**Ready to integrate?** → **[Start with the Integration Guide](./INTEGRATION.md)** 🚀 
