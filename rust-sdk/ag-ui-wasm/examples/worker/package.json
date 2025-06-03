@@ -1,0 +1,24 @@
+{
+  "name": "ag-ui-worker-example",
+  "version": "0.1.0",
+  "description": "Cloudflare Worker example for AG-UI Rust SDK",
+  "main": "src/lib.rs",
+  "scripts": {
+    "build": "wrangler build",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler preview"
+  },
+  "keywords": [
+    "cloudflare",
+    "worker",
+    "wasm",
+    "rust",
+    "ag-ui"
+  ],
+  "author": "AG-UI Team",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+} 
