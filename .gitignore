@@ -68,6 +68,7 @@ Thumbs.db
 *.tmp
 *.temp
 .cache/
+commit_message.txt
 
 # Environment variables
 .env

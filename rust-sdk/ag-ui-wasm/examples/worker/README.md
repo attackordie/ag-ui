@@ -9,10 +9,28 @@ A complete example of the AG-UI Rust SDK running in a Cloudflare Worker via WebA
 - **Complete AG-UI Protocol**: Full event streaming with Server-Sent Events
 - **Production Ready**: Proper error handling, CORS support, and async initialization
 
+## 📋 Prerequisites
+
+Before starting, ensure you have the following installed:
+
+```bash
+# Install Rust (if not already installed)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Install wasm-pack for building WebAssembly packages
+curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+# Install wrangler CLI for Cloudflare Workers
+npm install -g wrangler
+```
+
 ## 🚀 Quick Start
 
 ```bash
-# Build the WASM package
+# Navigate to the worker example directory
+cd rust-sdk/ag-ui-wasm/examples/worker
+
+# Build the WASM package (this may take a few minutes on first run)
 wasm-pack build --target web --out-dir ./pkg
 
 # Start the development server
@@ -21,6 +39,8 @@ wrangler dev --local
 # Visit http://localhost:8787 for the test interface
 # Or use the API directly at http://localhost:8787/awp
 ```
+
+**Expected output:** You should see "Ready on http://localhost:8787" and be able to access the interactive test interface in your browser.
 
 ## 📁 Project Structure
 
