@@ -1,16 +1,11 @@
 name = "ag-ui-worker"
-type = "rust"
 compatibility_date = "2024-01-01"
+main = "worker.js"
 
 [build]
 command = "wasm-pack build --target web --out-dir ./pkg"
 
-[build.upload]
-dir = "pkg"
-format = "modules"
-main = "./worker.mjs"
-
-[[build.upload.rules]]
+[[rules]]
 type = "CompiledWasm"
 globs = ["**/*.wasm"]
 fallthrough = true 
