@@ -234,7 +234,7 @@ const TEST_HTML: &str = r#"<!DOCTYPE html>
                 <li><strong>Performance:</strong> Zero-copy WASM integration with automatic memory management</li>
             </ul>
             <p style="margin: 10px 0 0 0; font-size: 0.8em; color: #868e96;">
-                📖 For complete technical analysis, see <a href="ARCHITECTURE.md" style="color: #007cba;">ARCHITECTURE.md</a>
+                📖 View source code and documentation: <a href="https://github.com/attackordie/ag-ui/tree/main/rust-sdk" target="_blank" style="color: #007cba;">github.com/attackordie/ag-ui/tree/main/rust-sdk</a>
             </p>
         </div>
     </div>

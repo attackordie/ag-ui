@@ -28,6 +28,16 @@ A comprehensive Rust SDK for the AG-UI (Autonomous Agent User Interface) platfor
 
 **Need to understand the architecture?** → **[📖 Architecture Guide](./ARCHITECTURE.md)**
 
+## 🌐 **Live Demo**
+
+**🚀 See it in action:** **[https://ag-ui-worker-example.brianpboynton.workers.dev](https://ag-ui-worker-example.brianpboynton.workers.dev)**
+
+Experience our **pure Rust WebAssembly implementation** running live on Cloudflare Workers:
+- **Complete AG-UI protocol** streaming (99% Rust, 1% JavaScript)
+- **Real-time events** with Server-Sent Events and Web Streams
+- **Interactive demonstration** with full technical explanations
+- **Production deployment** showcasing WASM performance and capabilities
+
 ### For Web/Browser Projects
 ```bash
 cd ag-ui-wasm
