@@ -1,24 +1,32 @@
 {
   "name": "ag-ui-worker-example",
   "version": "0.1.0",
-  "description": "Cloudflare Worker example for AG-UI Rust SDK",
-  "main": "src/lib.rs",
+  "description": "AG-UI WASM Cloudflare Worker - Pure Rust Implementation Demo",
   "scripts": {
-    "build": "wrangler build",
-    "dev": "wrangler dev",
+    "build": "wasm-pack build --target web --out-dir ./pkg --release",
+    "dev": "wrangler dev --local",
     "deploy": "wrangler deploy",
-    "preview": "wrangler preview"
+    "preview": "wrangler dev",
+    "clean": "rm -rf pkg/ node_modules/"
   },
-  "keywords": [
-    "cloudflare",
-    "worker",
-    "wasm",
-    "rust",
-    "ag-ui"
-  ],
-  "author": "AG-UI Team",
-  "license": "MIT",
   "devDependencies": {
     "wrangler": "^3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/attackordie/ag-ui.git",
+    "directory": "rust-sdk/ag-ui-wasm/examples/worker"
+  },
+  "keywords": [
+    "ag-ui",
+    "rust",
+    "wasm",
+    "cloudflare-workers",
+    "server-sent-events",
+    "streaming"
+  ],
+  "license": "MIT OR Apache-2.0",
+  "engines": {
+    "node": ">=16.0.0"
   }
 } 
