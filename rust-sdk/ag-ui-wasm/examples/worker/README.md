@@ -1,12 +1,12 @@
-# AG-UI WASM Cloudflare Worker - Pure Rust Implementation
+# Anthropic-GitHub User Interface (AG-UI) WASM Cloudflare Worker - Pure Rust Implementation
 
-A complete example of the AG-UI Rust SDK running in a Cloudflare Worker via WebAssembly, implemented entirely in Rust with minimal JavaScript wrapper.
+A complete example of the [Anthropic-GitHub User Interface (AG-UI)](https://github.com/attackordie/ag-ui) Rust SDK running in a Cloudflare Worker via WebAssembly, implemented entirely in Rust with minimal JavaScript wrapper.
 
 ## 🌐 **Live Demo**
 
 **🚀 Try it now:** **[https://ag-ui-worker-example.brianpboynton.workers.dev](https://ag-ui-worker-example.brianpboynton.workers.dev)**
 
-Experience the AG-UI protocol in action with this interactive demonstration of:
+Experience the [Anthropic-GitHub User Interface (AG-UI)](https://github.com/attackordie/ag-ui) protocol in action with this interactive demonstration of:
 - Complete AG-UI event streaming (RUN_STARTED → TEXT_MESSAGE_START → TEXT_MESSAGE_CONTENT → TEXT_MESSAGE_END → RUN_FINISHED)
 - Pure Rust implementation (99% Rust, 1% JavaScript) running in production
 - Real-time Server-Sent Events with beautiful educational interface
