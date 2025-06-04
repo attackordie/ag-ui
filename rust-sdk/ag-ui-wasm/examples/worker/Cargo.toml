@@ -19,7 +19,8 @@ web-sys = { version = "0.3", features = [
     "ResponseInit",
     "ReadableStream",
     "ReadableStreamDefaultController",
-    "TextEncoder"
+    "TextEncoder",
+    "Url"
 ] }
 js-sys = "0.3"
 serde = { version = "1.0", features = ["derive"] }
