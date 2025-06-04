@@ -2,6 +2,16 @@
 
 A complete example of the AG-UI Rust SDK running in a Cloudflare Worker via WebAssembly, implemented entirely in Rust with minimal JavaScript wrapper.
 
+## 🌐 **Live Demo**
+
+**🚀 Try it now:** **[https://ag-ui-worker-example.brianpboynton.workers.dev](https://ag-ui-worker-example.brianpboynton.workers.dev)**
+
+Experience the AG-UI protocol in action with this interactive demonstration of:
+- Complete AG-UI event streaming (RUN_STARTED → TEXT_MESSAGE_START → TEXT_MESSAGE_CONTENT → TEXT_MESSAGE_END → RUN_FINISHED)
+- Pure Rust implementation (99% Rust, 1% JavaScript) running in production
+- Real-time Server-Sent Events with beautiful educational interface
+- Full protocol explanation and technical architecture details
+
 ## ✨ Features
 
 - **Pure Rust Implementation**: All logic implemented in Rust using wasm-bindgen
@@ -207,8 +217,10 @@ Note: Automatic rebuilding was disabled due to wasm-pack/wrangler compatibility 
 wasm-pack build --target web --out-dir ./pkg
 
 # Deploy to Cloudflare Workers
-wrangler publish
+wrangler deploy
 ```
+
+**🌐 Live Example:** This worker is deployed at [https://ag-ui-worker-example.brianpboynton.workers.dev](https://ag-ui-worker-example.brianpboynton.workers.dev)
 
 ## 🔍 Comparison with JavaScript Implementation
 
