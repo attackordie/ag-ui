@@ -485,11 +485,41 @@ wrangler dev
 
 ## Testing
 
-Run tests in the browser:
+The SDK includes a comprehensive test suite covering protocol compliance, performance, and real-world scenarios.
 
+### Quick Start
 ```bash
+# Run all tests across browsers
+./test_runner.sh
+
+# Run tests in Chrome only
 wasm-pack test --headless --chrome
+
+# Run specific test suites
+./test_runner.sh --integration   # Protocol compliance tests
+./test_runner.sh --performance   # Performance and stress tests
+./test_runner.sh --example       # Real-world usage examples
 ```
+
+### Test Coverage
+- **Protocol Compliance**: All AG-UI event types and sequencing
+- **Cross-Browser**: Chrome, Firefox, and Node.js environments
+- **Performance**: Event encoding, large payloads, concurrent operations
+- **Integration**: Complete conversation flows and tool interactions
+
+### Advanced Testing
+```bash
+# Debug mode with browser console
+wasm-pack test --chrome -- --nocapture
+
+# Specific test file
+wasm-pack test --chrome --headless -- --test integration_test
+
+# Coverage report (requires grcov)
+./test_runner.sh  # Includes coverage generation
+```
+
+> **📖 Detailed Testing Guide**: See [README_TESTS.md](README_TESTS.md) for comprehensive testing documentation, performance baselines, and writing custom tests.
 
 ## Performance Considerations
 
