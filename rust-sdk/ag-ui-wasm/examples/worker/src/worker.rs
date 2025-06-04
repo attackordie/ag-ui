@@ -16,7 +16,7 @@ const TEST_HTML: &str = r#"<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anthropic-GitHub User Interface (AG-UI) WASM Worker Test</title>
+    <title>AG-UI WASM Worker Test - CopilotKit's Agent User Interaction Protocol</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -144,13 +144,13 @@ const TEST_HTML: &str = r#"<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <h1>🤖 Anthropic-GitHub User Interface (AG-UI) WASM Worker Test (Pure Rust)</h1>
-        <p>Test the <a href="https://github.com/attackordie/ag-ui" target="_blank" style="color: #00a8ff;">Anthropic-GitHub User Interface (AG-UI)</a> Rust SDK running in a Cloudflare Worker via WASM - Pure Rust Implementation</p>
+        <h1>🤖 AG-UI WASM Worker Test (Pure Rust) - CopilotKit Protocol</h1>
+        <p>Test the <a href="https://github.com/attackordie/ag-ui" target="_blank" style="color: #00a8ff;">AG-UI (Agent User Interaction Protocol)</a> Rust SDK running in a Cloudflare Worker via WASM - Pure Rust Implementation</p>
         
         <div class="highlight-box" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);">
             <h3>❓ What is AG-UI?</h3>
             <p style="margin: 5px 0 10px 0; font-size: 0.95em; line-height: 1.5;">
-            <strong><a href="https://github.com/attackordie/ag-ui" target="_blank" style="color: #00a8ff;">Anthropic-GitHub User Interface (AG-UI)</a></strong> stands for <strong>Agent User Interaction Protocol</strong> - a standardized way for AI agents to communicate with user interfaces in real-time.
+            <strong><a href="https://github.com/attackordie/ag-ui" target="_blank" style="color: #00a8ff;">AG-UI (Agent User Interaction Protocol)</a></strong> is an open, lightweight, event-based protocol created by <strong><a href="https://copilotkit.ai" target="_blank" style="color: #00a8ff;">CopilotKit</a></strong> that standardizes how AI agents communicate with user interfaces in real-time.
             </p>
             <ul style="margin: 5px 0; padding-left: 20px; font-size: 0.9em;">
                 <li><strong>🔄 Real-time Streaming:</strong> AI agents send events as they work (like typing indicators and progressive responses)</li>
@@ -159,7 +159,7 @@ const TEST_HTML: &str = r#"<!DOCTYPE html>
                 <li><strong>⚡ Live Updates:</strong> Users see AI thinking and responding in real-time, not just final results</li>
             </ul>
             <p style="margin: 10px 0 5px 0; font-size: 0.85em;">
-                📖 Learn more at <a href="https://github.com/attackordie/ag-ui" target="_blank" style="color: white; text-decoration: underline;">github.com/attackordie/ag-ui</a> | <a href="https://docs.ag-ui.com/introduction" target="_blank" style="color: white; text-decoration: underline;">docs.ag-ui.com/introduction</a>
+                📖 Learn more at <a href="https://github.com/attackordie/ag-ui" target="_blank" style="color: white; text-decoration: underline;">github.com/attackordie/ag-ui</a> | <a href="https://docs.ag-ui.com/introduction" target="_blank" style="color: white; text-decoration: underline;">docs.ag-ui.com</a> | <a href="https://copilotkit.ai" target="_blank" style="color: white; text-decoration: underline;">copilotkit.ai</a>
             </p>
         </div>
         
@@ -184,7 +184,7 @@ const TEST_HTML: &str = r#"<!DOCTYPE html>
                 </div>
             </div>
             <ul>
-                <li><strong>🔧 Complete Web Service in Rust:</strong> HTTP handling, HTML interface, and <a href="https://github.com/attackordie/ag-ui" target="_blank" style="color: #007cba;">Anthropic-GitHub User Interface (AG-UI)</a> protocol - all in Rust via WASM</li>
+                <li><strong>🔧 Complete Web Service in Rust:</strong> HTTP handling, HTML interface, and <a href="https://github.com/attackordie/ag-ui" target="_blank" style="color: #007cba;">AG-UI protocol</a> (by CopilotKit) - all in Rust via WASM</li>
                 <li><strong>⚡ Real-time Streaming:</strong> Server-Sent Events with native Rust Web Streams API integration</li>
                 <li><strong>🛡️ Type Safety:</strong> Full Rust type checking across the entire stack with zero runtime errors</li>
                 <li><strong>🌐 Production Ready:</strong> Proper CORS, error handling, and async streams in serverless environment</li>
@@ -194,7 +194,7 @@ const TEST_HTML: &str = r#"<!DOCTYPE html>
         
         <div class="highlight-box" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
             <h3>📋 What You'll See When You Run the Agent</h3>
-            <p style="margin: 5px 0 10px 0; font-size: 0.9em;">Click "🚀 Run Agent" to see exactly 5 <a href="https://github.com/attackordie/ag-ui" target="_blank" style="color: #007cba;">Anthropic-GitHub User Interface (AG-UI)</a> events stream in real-time. Here's what each one means:</p>
+            <p style="margin: 5px 0 10px 0; font-size: 0.9em;">Click "🚀 Run Agent" to see exactly 5 <a href="https://github.com/attackordie/ag-ui" target="_blank" style="color: #007cba;">AG-UI</a> events stream in real-time. Here's what each one means:</p>
             <ol style="margin: 5px 0; padding-left: 20px; font-size: 0.9em;">
                 <li><strong>RUN_STARTED:</strong> Workflow begins - Rust router processes your request and initializes the <a href="https://github.com/attackordie/ag-ui" target="_blank" style="color: #007cba;">AG-UI</a> stream</li>
                 <li><strong>TEXT_MESSAGE_START:</strong> Assistant message begins - UUID generated in Rust for message tracking</li>
@@ -220,7 +220,7 @@ const TEST_HTML: &str = r#"<!DOCTYPE html>
         <button id="runButton" onclick="runAgent()">🚀 Run Agent</button>
         <button id="clearButton" onclick="clearOutput()">🗑️ Clear Output</button>
         
-        <div id="status" class="status">Ready to test Anthropic-GitHub User Interface (AG-UI) Worker (Pure Rust)</div>
+        <div id="status" class="status">Ready to test AG-UI Worker (Pure Rust) - CopilotKit Protocol</div>
         
         <div id="output"></div>
         
@@ -230,7 +230,7 @@ const TEST_HTML: &str = r#"<!DOCTYPE html>
                 <li><strong>Architecture:</strong> Browser → worker.js (26 lines) → WASM → worker.rs (400+ lines)</li>
                 <li><strong>Stream Flow:</strong> ReadableStream → SSEEncoder → Server-Sent Events → Browser display</li>
                 <li><strong>Type Safety:</strong> Every event uses strongly-typed Rust structs from ag-ui-wasm crate</li>
-                <li><strong>Protocol:</strong> Full <a href="https://github.com/attackordie/ag-ui" target="_blank" style="color: #007cba;">Anthropic-GitHub User Interface (AG-UI)</a> compliance with proper event lifecycle management</li>
+                <li><strong>Protocol:</strong> Full <a href="https://github.com/attackordie/ag-ui" target="_blank" style="color: #007cba;">AG-UI</a> compliance with proper event lifecycle management (CopilotKit's protocol)</li>
                 <li><strong>Performance:</strong> Zero-copy WASM integration with automatic memory management</li>
             </ul>
             <p style="margin: 10px 0 0 0; font-size: 0.8em; color: #868e96;">
@@ -269,7 +269,7 @@ const TEST_HTML: &str = r#"<!DOCTYPE html>
 
         function clearOutput() {
             document.getElementById('output').innerHTML = '';
-            updateStatus('Ready to test Anthropic-GitHub User Interface (AG-UI) Worker (Pure Rust)');
+            updateStatus('Ready to test AG-UI Worker (Pure Rust) - CopilotKit Protocol');
         }
 
         async function runAgent() {
@@ -504,7 +504,7 @@ fn create_agent_stream(input: RunAgentInput) -> Result<web_sys::ReadableStream, 
         controller.enqueue_with_chunk(&encoded.into())?;
         
         // Send message content
-        let content = "Hello! I'm an Anthropic-GitHub User Interface (AG-UI) agent running in a Cloudflare Worker (Pure Rust implementation).";
+        let content = "Hello! I'm an AG-UI agent running in a Cloudflare Worker (Pure Rust implementation). AG-UI is CopilotKit's Agent User Interaction Protocol.";
         let event = BaseEvent {
             event_type: EventType::TextMessageContent,
             timestamp: None,
