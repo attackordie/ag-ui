@@ -1,0 +1,21 @@
+# Cargo configuration for faster builds
+
+[build]
+# Use all available cores for parallel compilation
+jobs = -1
+
+[profile.release]
+# Optimize for size in WASM builds
+opt-level = "z"
+lto = true
+codegen-units = 1
+
+# Speed up incremental builds
+[profile.dev]
+opt-level = 0
+debug = 0
+incremental = true
+
+# Cache configuration
+[net]
+git-fetch-with-cli = true

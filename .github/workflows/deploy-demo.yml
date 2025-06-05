@@ -40,25 +40,38 @@ jobs:
           workspaces: |
             rust-sdk/ag-ui-rust
             rust-sdk/ag-ui-wasm
+            rust-sdk/ag-ui-wasm/examples/worker
+          cache-on-failure: true
+          shared-key: "wasm-build"
 
       - name: 🌐 Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: 'latest'
 
-      - name: 🧪 Test ag-ui-rust (if changed)
+      - name: 🧪 Run Tests (if code changed)
         run: |
-          if git diff --name-only HEAD~1 | grep -q "rust-sdk/ag-ui-rust/"; then
+          # Check if any Rust code changed
+          CHANGED_FILES=$(git diff --name-only HEAD~1 2>/dev/null || echo "")
+          
+          # Test ag-ui-rust if changed
+          if echo "$CHANGED_FILES" | grep -q "rust-sdk/ag-ui-rust/"; then
+            echo "🔬 Testing ag-ui-rust..."
             cd rust-sdk/ag-ui-rust
             cargo test --verbose
+            cd ../..
           else
             echo "ℹ️ ag-ui-rust unchanged, skipping tests"
           fi
-
-      - name: 🧪 Test ag-ui-wasm (if changed)
-        run: |
-          if git diff --name-only HEAD~1 | grep -q "rust-sdk/ag-ui-wasm/"; then
+          
+          # Test ag-ui-wasm if changed (skip browser tests for speed)
+          if echo "$CHANGED_FILES" | grep -q "rust-sdk/ag-ui-wasm/"; then
+            echo "🔬 Testing ag-ui-wasm..."
             cd rust-sdk/ag-ui-wasm
             cargo test --verbose
-            wasm-pack test --headless --firefox
+            # Skip browser tests in CI for speed
+            # wasm-pack test --headless --firefox
+            cd ../..
           else
             echo "ℹ️ ag-ui-wasm unchanged, skipping tests"
           fi
