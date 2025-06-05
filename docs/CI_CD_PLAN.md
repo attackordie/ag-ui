@@ -14,6 +14,7 @@ The live demo at [https://ag-ui-worker-example.brianpboynton.workers.dev](https:
 ### 📁 **Files Created**
 1. **`.github/workflows/deploy-demo.yml`** - Main CI/CD pipeline
 2. **`rust-sdk/ag-ui-wasm/examples/worker/package.json`** - Updated with proper scripts
+3. **`CLOUDFLARE_SETUP.md`** - Security setup instructions for API tokens
 
 ### 🔄 **Workflow Triggers**
 
@@ -156,6 +157,21 @@ graph TD
 - **URL**: https://ag-ui-worker-example.brianpboynton.workers.dev
 - **API**: https://ag-ui-worker-example.brianpboynton.workers.dev/awp
 - **Automated Checks**: Health checks run after each deployment
+
+## 🔒 **Security Setup (Required)**
+
+### **Setting Up Cloudflare API Token**
+1. **Read the security guide**: See [`CLOUDFLARE_SETUP.md`](./CLOUDFLARE_SETUP.md) for detailed instructions
+2. **Create a limited API token** with only `Workers Scripts:Edit` permission
+3. **Add to GitHub Secrets** as `CLOUDFLARE_API_TOKEN`
+4. **Never commit tokens** to the repository
+
+### **Token Security Best Practices**
+- Use minimal permissions (Workers only)
+- Set expiration dates on tokens
+- Store only in GitHub Secrets
+- Rotate tokens regularly
+- Monitor usage in Cloudflare dashboard
 
 ## 🔧 **Local Development Workflow**
 
