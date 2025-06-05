@@ -227,11 +227,14 @@ const TEST_HTML: &str = r#"<!DOCTYPE html>
         <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;">
             <h4 style="margin: 0 0 10px 0; color: #495057;">🔍 Technical Details</h4>
             <ul style="margin: 5px 0; padding-left: 20px; font-size: 0.85em; color: #666;">
-                <li><strong>Architecture:</strong> Browser → worker.js (26 lines) → WASM → worker.rs (400+ lines)</li>
-                <li><strong>Stream Flow:</strong> ReadableStream → SSEEncoder → Server-Sent Events → Browser display</li>
-                <li><strong>Type Safety:</strong> Every event uses strongly-typed Rust structs from ag-ui-wasm crate</li>
+                <li><strong>Architecture:</strong> Browser → Cloudflare Worker V8 Isolate → JavaScript shim (26 lines) → WASM module → Rust code (400+ lines)</li>
+                <li><strong>WASM Compilation:</strong> Rust source compiled to WebAssembly binary via wasm-bindgen, running in V8's secure isolate sandbox</li>
+                <li><strong>JavaScript Shim:</strong> Minimal 26-line loader that initializes WASM module and forwards requests to Rust handler</li>
+                <li><strong>V8 Isolate:</strong> Each request runs in its own isolated V8 context with deterministic execution and memory limits</li>
+                <li><strong>Stream Flow:</strong> Rust creates ReadableStream → SSEEncoder formats events → Server-Sent Events → Browser EventSource API</li>
+                <li><strong>Type Safety:</strong> Every event uses strongly-typed Rust structs from ag-ui-wasm crate, compiled to WASM with zero runtime overhead</li>
                 <li><strong>Protocol:</strong> Full <a href="https://github.com/attackordie/ag-ui" target="_blank" style="color: #007cba;">AG-UI</a> compliance with proper event lifecycle management (CopilotKit's protocol)</li>
-                <li><strong>Performance:</strong> Zero-copy WASM integration with automatic memory management</li>
+                <li><strong>Performance:</strong> Zero-copy WASM integration, automatic memory management, and V8 JIT optimization</li>
             </ul>
             <p style="margin: 10px 0 0 0; font-size: 0.8em; color: #868e96;">
                 📖 View source code and documentation: <a href="https://github.com/attackordie/ag-ui/tree/main/rust-sdk" target="_blank" style="color: #007cba;">github.com/attackordie/ag-ui/tree/main/rust-sdk</a>
