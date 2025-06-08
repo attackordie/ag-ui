@@ -17,6 +17,7 @@ import {
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { menuIntegrations } from "@/menu";
+import { Feature } from "@/types/integration";
 
 interface SidebarProps {
   activeTab?: string;
@@ -42,7 +43,9 @@ export function Sidebar({ activeTab = "preview", onTabChange, readmeContent }: S
 
   // Filter demos based on current integration's features
   const filteredDemos = currentIntegration
-    ? featureConfig.filter((demo) => currentIntegration.features.includes(demo.id))
+    ? featureConfig.filter((demo) =>
+        currentIntegration.features.includes(demo.id as unknown as Feature),
+      )
     : []; // Show no demos if no integration is selected
 
   // Handle selecting a demo
@@ -116,12 +119,7 @@ export function Sidebar({ activeTab = "preview", onTabChange, readmeContent }: S
                 <DropdownMenuItem
                   key={integration.id}
                   onClick={() => {
-                    const firstFeature = integration.features[0];
-                    if (firstFeature) {
-                      router.push(`/${integration.id}/feature/${firstFeature}`);
-                    } else {
-                      router.push(`/${integration.id}`);
-                    }
+                    router.push(`/${integration.id}`);
                   }}
                   className="cursor-pointer"
                 >
