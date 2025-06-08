@@ -16,10 +16,12 @@ pub use client::web_agent::WebAgent;
 pub use core::{
     events::{
         BaseEvent, EventType, EventData,
-        TextMessageStartEvent, TextMessageContentEvent, 
-        TextMessageEndEvent, RunStartedEvent, RunFinishedEvent
+        TextMessageStartEvent, TextMessageContentEvent, TextMessageEndEvent,
+        ToolCallStartEvent, ToolCallChunkEvent, ToolCallEndEvent,
+        StateSnapshotEvent, StateDeltaEvent, MessagesSnapshotEvent,
+        RunStartedEvent, RunFinishedEvent, ErrorEvent
     },
-    types::{Message, RunAgentInput, State, Role},
+    types::{Message, RunAgentInput, State, Role, Tool, Context, ToolCall, ToolResult},
 };
 pub use encoder::SseEncoder as SSEEncoder;
 pub use error::{AgUiError, Result};
