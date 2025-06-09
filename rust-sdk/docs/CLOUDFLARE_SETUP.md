@@ -20,9 +20,11 @@ The AG-UI demo uses GitHub Actions to automatically deploy to Cloudflare Workers
 ```
 Account:
 - Cloudflare Workers Scripts:Edit
+- Account Settings:Read
 
 User:
 - User Details:Read
+- Memberships:Read
 
 Zone:
 - Workers Routes:Edit (if using custom domains)
@@ -113,9 +115,11 @@ After configuration:
 
 **Why these minimal permissions?**
 - `Workers Scripts:Edit` - Required to deploy and update Workers
+- `Account Settings:Read` - Required to read account information
 - `User Details:Read` - Required by Wrangler CLI to authenticate properly
-- These permissions cannot access your DNS, SSL, or other account settings
-- They're scoped to only Workers functionality and basic user identification
+- `Memberships:Read` - Required to access account membership information
+- These permissions cannot access your DNS, SSL, or other sensitive account settings
+- They're scoped to only Workers functionality and basic user/account identification
 
 **Additional Permissions (only if needed):**
 - `Workers Routes:Edit` - Only if using custom domains
