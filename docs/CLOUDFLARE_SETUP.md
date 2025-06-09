@@ -21,6 +21,9 @@ The AG-UI demo uses GitHub Actions to automatically deploy to Cloudflare Workers
 Account:
 - Cloudflare Workers Scripts:Edit
 
+User:
+- User Details:Read
+
 Zone:
 - Workers Routes:Edit (if using custom domains)
 ```
@@ -95,6 +98,12 @@ After configuration:
 - Check token hasn't expired
 - Ensure token is for the correct Cloudflare account
 
+### Error: "Authentication error [code: 10000]" or "Are you missing the `User->User Details->Read` permission?"
+- This error occurs when the API token is missing the `User Details:Read` permission
+- Go back to Cloudflare API Tokens page and edit your token
+- Add the `User->User Details->Read` permission
+- Save the token and update it in GitHub Secrets if it changed
+
 ### Error: "Workers.dev subdomain not configured"
 - First deployment may need manual subdomain setup
 - Visit Cloudflare Dashboard → Workers & Pages → Overview
@@ -102,11 +111,11 @@ After configuration:
 
 ## Token Permissions Explained
 
-**Why only "Workers Scripts:Edit"?**
-- This is the minimal permission needed to deploy Workers
-- It cannot access your DNS, SSL, or other account settings
-- It cannot read sensitive account information
-- It's scoped to only Workers functionality
+**Why these minimal permissions?**
+- `Workers Scripts:Edit` - Required to deploy and update Workers
+- `User Details:Read` - Required by Wrangler CLI to authenticate properly
+- These permissions cannot access your DNS, SSL, or other account settings
+- They're scoped to only Workers functionality and basic user identification
 
 **Additional Permissions (only if needed):**
 - `Workers Routes:Edit` - Only if using custom domains
