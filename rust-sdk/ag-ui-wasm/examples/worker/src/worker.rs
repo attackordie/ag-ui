@@ -147,7 +147,7 @@ const TEST_HTML: &str = r#"<!DOCTYPE html>
         <h1>🤖 AG-UI WASM Worker Test (Pure Rust) - CopilotKit Protocol</h1>
         <p>Test the <a href="https://github.com/attackordie/ag-ui" target="_blank" style="color: #00a8ff;">AG-UI (Agent User Interaction Protocol)</a> Rust SDK running in a Cloudflare Worker via WASM - Pure Rust Implementation</p>
         
-        <div class="highlight-box" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);">
+        <div class="highlight-box" style="background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%); color: #495057;">
             <h3>❓ What is AG-UI?</h3>
             <p style="margin: 5px 0 10px 0; font-size: 0.95em; line-height: 1.5;">
             <strong><a href="https://github.com/attackordie/ag-ui" target="_blank" style="color: #00a8ff;">AG-UI (Agent User Interaction Protocol)</a></strong> is an open, lightweight, event-based protocol created by <strong><a href="https://copilotkit.ai" target="_blank" style="color: #00a8ff;">CopilotKit</a></strong> that standardizes how AI agents communicate with user interfaces in real-time.
