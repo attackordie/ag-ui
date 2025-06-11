@@ -1,4 +1,4 @@
-name: 🚀 Deploy AG-UI Worker Demo
+name: Deploy AG-UI Worker Demo
 
 on:
   push:
@@ -22,19 +22,19 @@ on:
 jobs:
   # Build and test WASM first
   build-wasm:
-    name: 🦀 Build WASM Package
+    name: Build WASM Package
     runs-on: ubuntu-latest
     
     steps:
-      - name: 📥 Checkout Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 🦀 Setup Rust
+      - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
 
-      - name: 📦 Setup Rust Cache
+      - name: Setup Rust Cache
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: |
@@ -44,45 +44,45 @@ jobs:
           cache-on-failure: true
           shared-key: "wasm-build"
 
-      - name: 🌐 Install wasm-pack
+      - name: Install wasm-pack
         uses: jetli/wasm-pack-action@v0.4.0
         with:
           version: 'latest'
 
-      - name: 🧪 Run Tests (if code changed)
+      - name: Run Tests (if code changed)
         run: |
           # Check if any Rust code changed
           CHANGED_FILES=$(git diff --name-only HEAD~1 2>/dev/null || echo "")
           
           # Test ag-ui-rust if changed
           if echo "$CHANGED_FILES" | grep -q "rust-sdk/ag-ui-rust/"; then
-            echo "🔬 Testing ag-ui-rust..."
+            echo "Testing ag-ui-rust..."
             cd rust-sdk/ag-ui-rust
             cargo test --verbose
             cd ../..
           else
-            echo "ℹ️ ag-ui-rust unchanged, skipping tests"
+            echo "ag-ui-rust unchanged, skipping tests"
           fi
           
           # Test ag-ui-wasm if changed (skip browser tests for speed)
           if echo "$CHANGED_FILES" | grep -q "rust-sdk/ag-ui-wasm/"; then
-            echo "🔬 Testing ag-ui-wasm..."
+            echo "Testing ag-ui-wasm..."
             cd rust-sdk/ag-ui-wasm
             cargo test --verbose
             # Skip browser tests in CI for speed
             # wasm-pack test --headless --firefox
             cd ../..
           else
-            echo "ℹ️ ag-ui-wasm unchanged, skipping tests"
+            echo "ag-ui-wasm unchanged, skipping tests"
           fi
 
-      - name: 🏗️ Build Worker WASM
+      - name: Build Worker WASM
         run: |
           cd rust-sdk/ag-ui-wasm/examples/worker
           wasm-pack build --target web --out-dir ./pkg --release
           ls -la pkg/
 
-      - name: 📤 Upload WASM Artifacts
+      - name: Upload WASM Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: wasm-build
@@ -91,7 +91,7 @@ jobs:
 
   # Deploy to Cloudflare Workers (main branch only)
   deploy-demo:
-    name: 🌐 Deploy to Cloudflare Workers
+    name: Deploy to Cloudflare Workers
     runs-on: ubuntu-latest
     needs: build-wasm
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -101,54 +101,54 @@ jobs:
       url: https://ag-ui-worker-example.brianpboynton.workers.dev
 
     steps:
-      - name: 📥 Checkout Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 📦 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: 'rust-sdk/ag-ui-wasm/examples/worker/package*.json'
 
-      - name: 📥 Download WASM Artifacts
+      - name: Download WASM Artifacts
         uses: actions/download-artifact@v4
         with:
           name: wasm-build
           path: rust-sdk/ag-ui-wasm/examples/worker/pkg/
 
-      - name: 📦 Install Wrangler
+      - name: Install Wrangler
         run: npm install -g wrangler
 
-      - name: 🚀 Deploy to Cloudflare Workers
+      - name: Deploy to Cloudflare Workers
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           cd rust-sdk/ag-ui-wasm/examples/worker
           wrangler deploy --compatibility-date 2024-01-01
 
-      - name: ✅ Deployment Success
+      - name: Deployment Success
         run: |
-          echo "🎉 Demo successfully deployed!"
-          echo "🌐 Live at: https://ag-ui-worker-example.brianpboynton.workers.dev"
+          echo "Demo successfully deployed!"
+          echo "Live at: https://ag-ui-worker-example.brianpboynton.workers.dev"
 
   # Verify deployment (optional but recommended)
   verify-deployment:
-    name: 🧪 Verify Live Demo
+    name: Verify Live Demo
     runs-on: ubuntu-latest
     needs: deploy-demo
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
-      - name: 🏥 Health Check
+      - name: Health Check
         run: |
-          echo "🔍 Testing live demo endpoint..."
+          echo "Testing live demo endpoint..."
           
           # Test main page
           if curl -f -s "https://ag-ui-worker-example.brianpboynton.workers.dev" > /dev/null; then
-            echo "✅ Main page is accessible"
+            echo "Main page is accessible"
           else
-            echo "❌ Main page failed" && exit 1
+            echo "Main page failed" && exit 1
           fi
           
           # Test API endpoint
@@ -156,39 +156,39 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{"thread_id":"ci-test","run_id":"ci-test"}' \
             "https://ag-ui-worker-example.brianpboynton.workers.dev/awp" > /dev/null; then
-            echo "✅ API endpoint is working"
+            echo "API endpoint is working"
           else
-            echo "❌ API endpoint failed" && exit 1
+            echo "API endpoint failed" && exit 1
           fi
           
-          echo "🎉 All health checks passed!"
+          echo "All health checks passed!"
 
   # PR Preview (for pull requests)
   pr-preview:
-    name: 🔍 PR Preview Build
+    name: PR Preview Build
     runs-on: ubuntu-latest
     needs: build-wasm
     if: github.event_name == 'pull_request'
 
     steps:
-      - name: 📥 Download WASM Artifacts
+      - name: Download WASM Artifacts
         uses: actions/download-artifact@v4
         with:
           name: wasm-build
           path: artifacts/
 
-      - name: 📊 Build Summary
+      - name: Build Summary
         run: |
-          echo "## 🦀 WASM Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## WASM Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ **WASM build completed successfully**" >> $GITHUB_STEP_SUMMARY
+          echo "**WASM build completed successfully**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📦 Generated Files:" >> $GITHUB_STEP_SUMMARY
+          echo "### Generated Files:" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           ls -la artifacts/ >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🌐 **Ready for deployment** once merged to main branch" >> $GITHUB_STEP_SUMMARY
+          echo "**Ready for deployment** once merged to main branch" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🚀 Deployment Target:" >> $GITHUB_STEP_SUMMARY
+          echo "### Deployment Target:" >> $GITHUB_STEP_SUMMARY
           echo "[AG-UI Worker Demo](https://ag-ui-worker-example.brianpboynton.workers.dev)" >> $GITHUB_STEP_SUMMARY 
