@@ -8,6 +8,8 @@ import { VercelAISDKAgent } from "@ag-ui/vercel-ai-sdk";
 import { openai } from "@ai-sdk/openai";
 import { LangGraphAgent } from "@ag-ui/langgraph";
 import { AgnoAgent } from "@ag-ui/agno";
+import { LlamaIndexAgent } from "@ag-ui/llamaindex";
+import { CrewAIAgent } from "@ag-ui/crewai";
 
 export const agentsIntegrations: AgentIntegrationConfig[] = [
   {
@@ -108,6 +110,50 @@ export const agentsIntegrations: AgentIntegrationConfig[] = [
       return {
         agentic_chat: new AgnoAgent({
           url: "http://localhost:8000/agui",
+        }),
+      };
+    },
+  },
+  {
+    id: "llama-index",
+    agents: async () => {
+      return {
+        agentic_chat: new LlamaIndexAgent({
+          url: "http://localhost:9000/agentic_chat/run",
+        }),
+        human_in_the_loop: new LlamaIndexAgent({
+          url: "http://localhost:9000/human_in_the_loop/run",
+        }),
+        agentic_generative_ui: new LlamaIndexAgent({
+          url: "http://localhost:9000/agentic_generative_ui/run",
+        }),
+        shared_state: new LlamaIndexAgent({
+          url: "http://localhost:9000/shared_state/run",
+        }),
+      };
+    },
+  },
+  {
+    id: "crewai",
+    agents: async () => {
+      return {
+        agentic_chat: new CrewAIAgent({
+          url: "http://localhost:8000/agentic_chat",
+        }),
+        human_in_the_loop: new CrewAIAgent({
+          url: "http://localhost:8000/human_in_the_loop",
+        }),
+        tool_based_generative_ui: new CrewAIAgent({
+          url: "http://localhost:8000/tool_based_generative_ui",
+        }),
+        agentic_generative_ui: new CrewAIAgent({
+          url: "http://localhost:8000/agentic_generative_ui",
+        }),
+        shared_state: new CrewAIAgent({
+          url: "http://localhost:8000/shared_state",
+        }),
+        predictive_state_updates: new CrewAIAgent({
+          url: "http://localhost:8000/predictive_state_updates",
         }),
       };
     },

@@ -9,6 +9,7 @@ import {
   Message as LangGraphMessage,
   Config,
   Interrupt,
+  Thread
 } from "@langchain/langgraph-sdk";
 import { randomUUID } from "node:crypto";
 import { RemoveMessage } from "@langchain/core/messages";
@@ -18,12 +19,16 @@ import {
   LangGraphEventTypes,
   State,
   MessagesInProgressRecord,
+  ThinkingInProgress,
   SchemaKeys,
   MessageInProgress,
   RunMetadata,
   PredictStateTool,
+  LangGraphReasoning
 } from "./types";
 import {
+  AbstractAgent,
+  AgentConfig,
   CustomEvent,
   EventType,
   MessagesSnapshotEvent,
@@ -42,8 +47,12 @@ import {
   ToolCallArgsEvent,
   ToolCallEndEvent,
   ToolCallStartEvent,
-} from "@ag-ui/core";
-import { AbstractAgent, AgentConfig } from "@ag-ui/client";
+  ThinkingTextMessageStartEvent,
+  ThinkingTextMessageContentEvent,
+  ThinkingTextMessageEndEvent,
+  ThinkingStartEvent,
+  ThinkingEndEvent,
+} from "@ag-ui/client";
 import { RunsStreamPayload } from "@langchain/langgraph-sdk/dist/types";
 import {
   aguiMessagesToLangChain,
@@ -51,15 +60,22 @@ import {
   filterObjectBySchemaKeys,
   getStreamPayloadInput,
   langchainMessagesToAgui,
+  resolveMessageContent,
+  resolveReasoningContent
 } from "@/utils";
 
 export type ProcessedEvents =
   | TextMessageStartEvent
   | TextMessageContentEvent
   | TextMessageEndEvent
+  | ThinkingTextMessageStartEvent
+  | ThinkingTextMessageContentEvent
+  | ThinkingTextMessageEndEvent
   | ToolCallStartEvent
   | ToolCallArgsEvent
   | ToolCallEndEvent
+  | ThinkingStartEvent
+  | ThinkingEndEvent
   | StateSnapshotEvent
   | StateDeltaEvent
   | MessagesSnapshotEvent
@@ -77,6 +93,7 @@ type RunAgentExtendedInput<
 > = Omit<RunAgentInput, "forwardedProps"> & {
   forwardedProps?: Omit<RunsStreamPayload<TStreamMode, TSubgraphs>, "input"> & {
     nodeName?: string;
+    threadMetadata?: Record<string, any>;
   };
 };
 
@@ -97,6 +114,7 @@ export class LangGraphAgent extends AbstractAgent {
   graphId: string;
   assistant?: Assistant;
   messagesInProcess: MessagesInProgressRecord;
+  thinkingProcess: null | ThinkingInProgress;
   activeRun?: RunMetadata;
   // @ts-expect-error no need to initialize subscriber right now
   subscriber: Subscriber<ProcessedEvents>;
@@ -107,6 +125,7 @@ export class LangGraphAgent extends AbstractAgent {
     this.agentName = config.agentName;
     this.graphId = config.graphId;
     this.assistantConfig = config.assistantConfig;
+    this.thinkingProcess = null
     this.client =
       config?.client ??
       new LangGraphClient({
@@ -148,7 +167,9 @@ export class LangGraphAgent extends AbstractAgent {
       this.assistant = await this.getAssistant();
     }
 
-    let agentState = await this.getOrCreateThreadAndReturnState(threadId);
+    const thread = await this.getOrCreateThread(threadId, forwardedProps?.threadMetadata);
+    this.activeRun!.threadId = thread.thread_id;
+    const agentState = await this.client.threads.getState(thread.thread_id) ?? { values: {} } as ThreadState
 
     const agentStateValues = agentState.values as State;
     const aguiToLangChainMessage = aguiMessagesToLangChain(messages);
@@ -388,7 +409,7 @@ export class LangGraphAgent extends AbstractAgent {
         let shouldEmitToolCalls = event.metadata["emit-tool-calls"] ?? true;
 
         if (event.data.chunk.response_metadata.finish_reason) return;
-        const currentStream = this.getMessageInProgress(this.activeRun!.id);
+        let currentStream = this.getMessageInProgress(this.activeRun!.id);
         const hasCurrentStream = Boolean(currentStream?.id);
         const toolCallData = event.data.chunk.tool_call_chunks?.[0];
         const toolCallUsedToPredictState = event.metadata["predict_state"]?.some(
@@ -397,13 +418,30 @@ export class LangGraphAgent extends AbstractAgent {
 
         const isToolCallStartEvent = !hasCurrentStream && toolCallData?.name;
         const isToolCallArgsEvent =
-          hasCurrentStream && currentStream?.toolCallId && toolCallData.args;
+          hasCurrentStream && currentStream?.toolCallId && toolCallData?.args;
         const isToolCallEndEvent = hasCurrentStream && currentStream?.toolCallId && !toolCallData;
 
-        const isMessageStartEvent = !hasCurrentStream && !toolCallData;
-        const isMessageContentEvent = hasCurrentStream && !toolCallData;
+        const reasoningData = resolveReasoningContent(event.data);
+        const messageContent = resolveMessageContent(event.data.chunk.content);
+        const isMessageContentEvent = Boolean(!toolCallData && messageContent);
+
         const isMessageEndEvent =
           hasCurrentStream && !currentStream?.toolCallId && !isMessageContentEvent;
+
+        if (reasoningData) {
+          this.handleThinkingEvent(reasoningData)
+          break;
+        }
+
+        if (!reasoningData && this.thinkingProcess) {
+          this.dispatchEvent({
+            type: EventType.THINKING_TEXT_MESSAGE_END,
+          })
+          this.dispatchEvent({
+            type: EventType.THINKING_END,
+          })
+          this.thinkingProcess = null;
+        }
 
         if (toolCallUsedToPredictState) {
           this.dispatchEvent({
@@ -416,7 +454,7 @@ export class LangGraphAgent extends AbstractAgent {
         if (isToolCallEndEvent) {
           const resolved = this.dispatchEvent({
             type: EventType.TOOL_CALL_END,
-            toolCallId: currentStream.toolCallId!,
+            toolCallId: currentStream?.toolCallId!,
             rawEvent: event,
           });
           if (resolved) {
@@ -459,36 +497,35 @@ export class LangGraphAgent extends AbstractAgent {
         if (isToolCallArgsEvent && shouldEmitToolCalls) {
           this.dispatchEvent({
             type: EventType.TOOL_CALL_ARGS,
-            toolCallId: currentStream.toolCallId!,
+            toolCallId: currentStream?.toolCallId!,
             delta: toolCallData.args,
             rawEvent: event,
           });
           break;
         }
 
-        // Message started: emit TextMessageStart
-        if (isMessageStartEvent && shouldEmitMessages) {
-          const resolved = this.dispatchEvent({
-            type: EventType.TEXT_MESSAGE_START,
-            role: "assistant",
-            messageId: event.data.chunk.id,
-            rawEvent: event,
-          });
-          if (resolved) {
+        // Message content: emit TextMessageContent
+        if (isMessageContentEvent && shouldEmitMessages) {
+          // No existing message yet, also init the message
+          if (!currentStream) {
+            this.dispatchEvent({
+              type: EventType.TEXT_MESSAGE_START,
+              role: "assistant",
+              messageId: event.data.chunk.id,
+              rawEvent: event,
+            });
             this.setMessageInProgress(this.activeRun!.id, {
               id: event.data.chunk.id,
               toolCallId: null,
               toolCallName: null,
             });
+            currentStream = this.getMessageInProgress(this.activeRun!.id);
           }
-          break;
-        }
-        // Message content: emit TextMessageContent
-        if (isMessageContentEvent && shouldEmitMessages) {
+
           this.dispatchEvent({
             type: EventType.TEXT_MESSAGE_CONTENT,
             messageId: currentStream!.id,
-            delta: event.data.chunk.content,
+            delta: messageContent!,
             rawEvent: event,
           });
           break;
@@ -582,6 +619,51 @@ export class LangGraphAgent extends AbstractAgent {
     }
   }
 
+  handleThinkingEvent(reasoningData: LangGraphReasoning) {
+    if (!reasoningData || !reasoningData.type || !reasoningData.text) {
+      return;
+    }
+
+    const thinkingStepIndex = reasoningData.index;
+
+    if (this.thinkingProcess?.index && this.thinkingProcess.index !== thinkingStepIndex) {
+      if (this.thinkingProcess.type) {
+        this.dispatchEvent({
+          type: EventType.THINKING_TEXT_MESSAGE_END,
+        })
+      }
+      this.dispatchEvent({
+        type: EventType.THINKING_END,
+      })
+      this.thinkingProcess = null;
+    }
+
+    if (!this.thinkingProcess) {
+      // No thinking step yet. Start a new one
+      this.dispatchEvent({
+        type: EventType.THINKING_START,
+      })
+      this.thinkingProcess = {
+        index: thinkingStepIndex,
+      };
+    }
+
+
+    if (this.thinkingProcess.type !== reasoningData.type) {
+      this.dispatchEvent({
+        type: EventType.THINKING_TEXT_MESSAGE_START,
+      })
+      this.thinkingProcess.type = reasoningData.type
+    }
+
+    if (this.thinkingProcess.type) {
+      this.dispatchEvent({
+        type: EventType.THINKING_TEXT_MESSAGE_CONTENT,
+        delta: reasoningData.text
+      })
+    }
+  }
+
   getStateSnapshot(state: State) {
     const schemaKeys = this.activeRun!.schemaKeys!;
     // Do not emit state keys that are not part of the output schema
@@ -592,16 +674,30 @@ export class LangGraphAgent extends AbstractAgent {
     return state;
   }
 
-  async getOrCreateThreadAndReturnState(threadId: string): Promise<ThreadState<{}>> {
-    let agentState = { values: {} } as ThreadState;
+  async getOrCreateThread(threadId: string, threadMetadata?: Record<string, any>): Promise<Thread> {
+    let thread: Thread;
     try {
-      await this.client.threads.get(threadId);
-      agentState = await this.client.threads.getState(threadId);
-    } catch (error) {
-      await this.client.threads.create({ threadId });
+      try {
+        thread = await this.getThread(threadId);
+      } catch (error) {
+        thread = await this.createThread({ 
+          threadId,
+          metadata: threadMetadata 
+        });
+      }
+    } catch (error: unknown) {
+      throw new Error(`Failed to create thread: ${(error as Error).message}`);
     }
 
-    return agentState;
+    return thread;
+  }
+
+  async getThread(threadId: string) {
+    return this.client.threads.get(threadId);
+  }
+
+  async createThread(payload?: Parameters<typeof this.client.threads.create>[0]) {
+    return this.client.threads.create(payload);
   }
 
   async mergeConfigs({
@@ -672,11 +768,11 @@ export class LangGraphAgent extends AbstractAgent {
     const assistants = await this.client.assistants.search();
     const retrievedAssistant = assistants.find(
       (searchResult) =>
-        searchResult.assistant_id === this.agentId || searchResult.graph_id === this.graphId,
+        searchResult.graph_id === this.graphId,
     );
     if (!retrievedAssistant) {
       console.error(`
-      No agent found with graph ID ${this.graphId} or agent ID ${this.agentId} found..\n
+      No agent found with graph ID ${this.graphId} found..\n
       
       These are the available agents: [${assistants.map((a) => `${a.graph_id} (ID: ${a.assistant_id})`).join(", ")}]
       `);
@@ -740,4 +836,4 @@ export class LangGraphAgent extends AbstractAgent {
   }
 }
 
-export * from './types'
+export * from "./types";

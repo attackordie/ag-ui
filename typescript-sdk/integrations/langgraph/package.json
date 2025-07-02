@@ -1,10 +1,14 @@
 {
   "name": "@ag-ui/langgraph",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "dist/**"
   ],
@@ -18,13 +22,10 @@
     "unlink:global": "pnpm unlink --global"
   },
   "dependencies": {
-    "@ag-ui/core": "workspace:*",
     "@ag-ui/client": "workspace:*",
-    "partial-json": "^0.1.7"
-  },
-  "peerDependencies": {
     "@langchain/core": "^0.3.38",
     "@langchain/langgraph-sdk": "^0.0.78",
+    "partial-json": "^0.1.7",
     "rxjs": "7.8.1"
   },
   "devDependencies": {

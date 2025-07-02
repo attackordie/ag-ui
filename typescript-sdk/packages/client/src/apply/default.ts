@@ -12,6 +12,8 @@ import {
   CustomEvent,
   BaseEvent,
   AssistantMessage,
+  ToolCallResultEvent,
+  ToolMessage,
 } from "@ag-ui/core";
 import { mergeMap } from "rxjs/operators";
 import { structuredClone_ } from "../utils";
@@ -151,6 +153,21 @@ export const defaultApplyEvents = (...args: Parameters<ApplyEvents>): ReturnType
           return emitNoUpdate();
         }
 
+        case EventType.TOOL_CALL_RESULT: {
+          const { messageId, toolCallId, content, role } = event as ToolCallResultEvent;
+
+          const toolMessage: ToolMessage = {
+            id: messageId,
+            toolCallId,
+            role: role || "tool",
+            content: content,
+          };
+
+          messages.push(toolMessage);
+
+          return emitNoUpdate();
+        }
+
         case EventType.STATE_SNAPSHOT: {
           const { snapshot } = event as StateSnapshotEvent;
 
@@ -232,6 +249,26 @@ export const defaultApplyEvents = (...args: Parameters<ApplyEvents>): ReturnType
 
         case EventType.TOOL_CALL_CHUNK: {
           throw new Error("TOOL_CALL_CHUNK must be tranformed before being applied");
+        }
+
+        case EventType.THINKING_START: {
+          return emitNoUpdate();
+        }
+
+        case EventType.THINKING_END: {
+          return emitNoUpdate();
+        }
+
+        case EventType.THINKING_TEXT_MESSAGE_START: {
+          return emitNoUpdate();
+        }
+
+        case EventType.THINKING_TEXT_MESSAGE_CONTENT: {
+          return emitNoUpdate();
+        }
+
+        case EventType.THINKING_TEXT_MESSAGE_END: {
+          return emitNoUpdate();
         }
       }
 

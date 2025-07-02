@@ -84,6 +84,7 @@ export const transformChunks =
           case EventType.TOOL_CALL_START:
           case EventType.TOOL_CALL_ARGS:
           case EventType.TOOL_CALL_END:
+          case EventType.TOOL_CALL_RESULT:
           case EventType.STATE_SNAPSHOT:
           case EventType.STATE_DELTA:
           case EventType.MESSAGES_SNAPSHOT:
@@ -93,6 +94,11 @@ export const transformChunks =
           case EventType.RUN_ERROR:
           case EventType.STEP_STARTED:
           case EventType.STEP_FINISHED:
+          case EventType.THINKING_START:
+          case EventType.THINKING_END:
+          case EventType.THINKING_TEXT_MESSAGE_START:
+          case EventType.THINKING_TEXT_MESSAGE_CONTENT:
+          case EventType.THINKING_TEXT_MESSAGE_END:
             return [...closePendingEvent(), event];
           case EventType.RAW:
             return [event];
