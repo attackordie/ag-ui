@@ -12,6 +12,9 @@ pub enum EventType {
     RunStarted,
     RunFinished,
     RunAborted,
+    RunError,
+    StepStarted,
+    StepFinished,
     
     // Message events
     TextMessageStart,
@@ -20,8 +23,16 @@ pub enum EventType {
     TextMessageEnd,
     MessagesSnapshot,
     
+    // Thinking events
+    ThinkingTextMessageStart,
+    ThinkingTextMessageContent,
+    ThinkingTextMessageEnd,
+    ThinkingStart,
+    ThinkingEnd,
+    
     // Tool events
     ToolCallStart,
+    ToolCallArgs,
     ToolCallChunk,
     ToolCallEnd,
     ToolCallResult,
@@ -32,6 +43,10 @@ pub enum EventType {
     
     // Error events
     Error,
+    
+    // Other events
+    Raw,
+    Custom,
 }
 
 /// Base event structure
@@ -54,18 +69,29 @@ pub enum EventData {
     RunStarted(RunStartedEvent),
     RunFinished(RunFinishedEvent),
     RunAborted(RunAbortedEvent),
+    RunError(RunErrorEvent),
+    StepStarted(StepStartedEvent),
+    StepFinished(StepFinishedEvent),
     TextMessageStart(TextMessageStartEvent),
     TextMessageContent(TextMessageContentEvent),
     TextMessageChunk(TextMessageChunkEvent),
     TextMessageEnd(TextMessageEndEvent),
     MessagesSnapshot(MessagesSnapshotEvent),
+    ThinkingTextMessageStart(ThinkingTextMessageStartEvent),
+    ThinkingTextMessageContent(ThinkingTextMessageContentEvent),
+    ThinkingTextMessageEnd(ThinkingTextMessageEndEvent),
+    ThinkingStart(ThinkingStartEvent),
+    ThinkingEnd(ThinkingEndEvent),
     ToolCallStart(ToolCallStartEvent),
+    ToolCallArgs(ToolCallArgsEvent),
     ToolCallChunk(ToolCallChunkEvent),
     ToolCallEnd(ToolCallEndEvent),
     ToolCallResult(ToolCallResultEvent),
     StateSnapshot(StateSnapshotEvent),
     StateDelta(StateDeltaEvent),
     Error(ErrorEvent),
+    Raw(RawEvent),
+    Custom(CustomEvent),
 }
 
 // Event structures
@@ -161,6 +187,79 @@ pub struct ErrorEvent {
     pub code: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub details: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RunErrorEvent {
+    pub thread_id: String,
+    pub run_id: String,
+    pub error: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub code: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StepStartedEvent {
+    pub thread_id: String,
+    pub run_id: String,
+    pub step_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub step_type: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StepFinishedEvent {
+    pub thread_id: String,
+    pub run_id: String,
+    pub step_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ThinkingTextMessageStartEvent {
+    pub message_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub role: Option<Role>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ThinkingTextMessageContentEvent {
+    pub message_id: String,
+    pub delta: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ThinkingTextMessageEndEvent {
+    pub message_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ThinkingStartEvent {
+    pub thread_id: String,
+    pub run_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ThinkingEndEvent {
+    pub thread_id: String,
+    pub run_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolCallArgsEvent {
+    pub tool_call_id: String,
+    pub delta: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RawEvent {
+    pub event: serde_json::Value,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CustomEvent {
+    pub event_type: String,
+    #[serde(flatten)]
+    pub data: serde_json::Value,
 }
 
 // Helper implementations

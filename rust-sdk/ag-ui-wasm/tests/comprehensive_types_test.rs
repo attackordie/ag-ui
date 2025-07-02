@@ -30,7 +30,10 @@ fn test_message_serialization() {
         id: "msg_123".to_string(),
         role: Role::Assistant,
         content: "Hello there!".to_string(),
+        name: None,
         tool_call_id: Some("call_456".to_string()),
+        tool_calls: None,
+        function_call: None,
         metadata: Some({
             let mut map = HashMap::new();
             map.insert("key".to_string(), json!("value"));
@@ -76,6 +79,7 @@ fn test_role_variants() {
         (Role::Assistant, "assistant"),
         (Role::System, "system"),
         (Role::Tool, "tool"),
+        (Role::Developer, "developer"),
     ];
     
     for (role, expected_str) in roles {
@@ -85,6 +89,9 @@ fn test_role_variants() {
             content: "test".to_string(),
             tool_call_id: None,
             metadata: None,
+            name: None,
+            tool_calls: None,
+            function_call: None,
             created_at: None,
         };
         
@@ -192,6 +199,9 @@ fn test_comprehensive_run_agent_input() {
             content: "You are a helpful assistant.".to_string(),
             tool_call_id: None,
             metadata: None,
+            name: None,
+            tool_calls: None,
+            function_call: None,
             created_at: Some(Utc::now()),
         },
         Message {
@@ -200,6 +210,9 @@ fn test_comprehensive_run_agent_input() {
             content: "Hello AI!".to_string(),
             tool_call_id: None,
             metadata: None,
+            name: None,
+            tool_calls: None,
+            function_call: None,
             created_at: Some(Utc::now()),
         },
     ];
@@ -231,8 +244,9 @@ fn test_comprehensive_run_agent_input() {
         run_id: "run_complex".to_string(),
         messages: Some(messages),
         tools: Some(tools),
-        context: Some(context),
+        context: Some(vec![context]),
         state: Some(state),
+        forwarded_props: None,
     };
     
     // Test serialization
@@ -320,6 +334,9 @@ fn test_message_with_complex_metadata() {
         content: "I'll help you with that calculation and weather check.".to_string(),
         tool_call_id: None,
         metadata: Some(metadata),
+            name: None,
+            tool_calls: None,
+            function_call: None,
         created_at: Some(Utc::now()),
     };
     
@@ -345,16 +362,17 @@ fn test_round_trip_serialization() {
                 parameters: Some(json!({"type": "object"})),
             }
         ]),
-        context: Some(Context {
+        context: Some(vec![Context {
             user_id: Some("user_test".to_string()),
             session_id: None,
             metadata: None,
-        }),
+        }]),
         state: Some({
             let mut map = HashMap::new();
             map.insert("test_key".to_string(), json!("test_value"));
             map
         }),
+        forwarded_props: None,
     };
     
     // Serialize
@@ -369,7 +387,7 @@ fn test_round_trip_serialization() {
     assert_eq!(deserialized.messages.as_ref().unwrap().len(), 1);
     assert_eq!(deserialized.tools.as_ref().unwrap().len(), 1);
     assert_eq!(deserialized.tools.as_ref().unwrap()[0].name, "test_tool");
-    assert_eq!(deserialized.context.as_ref().unwrap().user_id, Some("user_test".to_string()));
+    assert_eq!(deserialized.context.as_ref().unwrap()[0].user_id, Some("user_test".to_string()));
     assert_eq!(deserialized.state.as_ref().unwrap()["test_key"], json!("test_value"));
 }
 
