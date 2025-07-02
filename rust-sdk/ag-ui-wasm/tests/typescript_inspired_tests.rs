@@ -2,11 +2,8 @@
 
 use ag_ui_wasm::{
     BaseEvent, EventType, EventData,
-    TextMessageStartEvent, TextMessageContentEvent, TextMessageEndEvent,
-    ToolCallStartEvent, ToolCallChunkEvent, ToolCallEndEvent,
-    StateSnapshotEvent, StateDeltaEvent, MessagesSnapshotEvent,
-    RunStartedEvent, RunFinishedEvent, ErrorEvent,
-    SSEEncoder, Message, Role, State,
+    ToolCallStartEvent, ToolCallChunkEvent, ToolCallEndEvent, StateDeltaEvent, MessagesSnapshotEvent, ErrorEvent,
+    SSEEncoder, Message, Role,
 };
 use wasm_bindgen_test::*;
 use serde_json::json;
@@ -232,7 +229,10 @@ fn test_messages_snapshot_with_complex_metadata() {
             id: "user_1".to_string(),
             role: Role::User,
             content: "Hello AI".to_string(),
+            name: None,
             tool_call_id: None,
+            tool_calls: None,
+            function_call: None,
             metadata: Some({
                 let mut map = HashMap::new();
                 map.insert("client_info".to_string(), json!({
@@ -248,7 +248,10 @@ fn test_messages_snapshot_with_complex_metadata() {
             id: "asst_1".to_string(),
             role: Role::Assistant,
             content: "Hello! How can I help?".to_string(),
+            name: None,
             tool_call_id: None,
+            tool_calls: None,
+            function_call: None,
             metadata: Some({
                 let mut map = HashMap::new();
                 map.insert("model_info".to_string(), json!({
@@ -274,7 +277,10 @@ fn test_messages_snapshot_with_complex_metadata() {
             id: "tool_1".to_string(),
             role: Role::Tool,
             content: "{\"temperature\": 72, \"condition\": \"sunny\"}".to_string(),
+            name: None,
             tool_call_id: Some("call_1".to_string()),
+            tool_calls: None,
+            function_call: None,
             metadata: Some({
                 let mut map = HashMap::new();
                 map.insert("execution_time".to_string(), json!(0.5));

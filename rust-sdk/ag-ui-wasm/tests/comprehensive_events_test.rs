@@ -2,10 +2,8 @@
 
 use ag_ui_wasm::{
     BaseEvent, EventType, EventData,
-    TextMessageStartEvent, TextMessageContentEvent, TextMessageEndEvent,
     ToolCallStartEvent, ToolCallChunkEvent, ToolCallEndEvent,
     StateSnapshotEvent, StateDeltaEvent, MessagesSnapshotEvent,
-    RunStartedEvent, RunFinishedEvent, ErrorEvent,
     Message, Role, State, ToolCall,
 };
 use wasm_bindgen_test::*;
@@ -126,7 +124,10 @@ fn test_messages_snapshot() {
             id: "msg_1".to_string(),
             role: Role::User,
             content: "Hello AI".to_string(),
+            name: None,
             tool_call_id: None,
+            tool_calls: None,
+            function_call: None,
             metadata: None,
             created_at: Some(Utc::now()),
         },
@@ -134,7 +135,10 @@ fn test_messages_snapshot() {
             id: "msg_2".to_string(),
             role: Role::Assistant,
             content: "Hello! How can I help?".to_string(),
+            name: None,
             tool_call_id: None,
+            tool_calls: None,
+            function_call: None,
             metadata: None,
             created_at: Some(Utc::now()),
         },

@@ -1,7 +1,5 @@
 use ag_ui_wasm::{
-    BaseEvent, EventType, EventData,
-    TextMessageStartEvent, TextMessageContentEvent, TextMessageEndEvent,
-    RunStartedEvent, RunFinishedEvent,
+    BaseEvent,
     Message, RunAgentInput, State, Role,
     SSEEncoder,
 };
@@ -24,7 +22,10 @@ async fn test_complete_agent_conversation_flow() {
                 id: "msg-user-001".to_string(),
                 role: Role::User,
                 content: "What's the weather today?".to_string(),
+                name: None,
                 tool_call_id: None,
+                tool_calls: None,
+                function_call: None,
                 metadata: None,
                 created_at: Some(Utc::now()),
             }
@@ -32,6 +33,7 @@ async fn test_complete_agent_conversation_flow() {
         tools: None,
         context: None,
         state: Some(HashMap::new()),
+        forwarded_props: None,
     };
 
     // Test event sequence
@@ -79,7 +81,10 @@ fn test_message_construction() {
         id: "msg-1".to_string(),
         role: Role::User,
         content: "Hello, AI!".to_string(),
+        name: None,
         tool_call_id: None,
+        tool_calls: None,
+        function_call: None,
         metadata: None,
         created_at: Some(Utc::now()),
     };
@@ -91,7 +96,10 @@ fn test_message_construction() {
         id: "msg-2".to_string(),
         role: Role::Assistant,
         content: "Hello! How can I help you today?".to_string(),
+        name: None,
         tool_call_id: None,
+        tool_calls: None,
+        function_call: None,
         metadata: None,
         created_at: Some(Utc::now()),
     };
@@ -102,7 +110,10 @@ fn test_message_construction() {
         id: "msg-3".to_string(),
         role: Role::System,
         content: "You are a helpful assistant.".to_string(),
+        name: None,
         tool_call_id: None,
+        tool_calls: None,
+        function_call: None,
         metadata: None,
         created_at: Some(Utc::now()),
     };

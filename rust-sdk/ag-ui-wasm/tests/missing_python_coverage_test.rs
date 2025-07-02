@@ -2,8 +2,7 @@
 
 use ag_ui_wasm::{
     BaseEvent, EventType, EventData, ErrorEvent,
-    SSEEncoder, Message, Role, ToolCall, ToolResult,
-    RunAgentInput, Tool, Context, State,
+    SSEEncoder, Message, Role, ToolCall, ToolResult, Context,
 };
 use wasm_bindgen_test::*;
 use serde_json::json;
@@ -128,6 +127,9 @@ fn test_tool_message_serialization() {
         content: "Tool result".to_string(),
         tool_call_id: Some("call_456".to_string()),
         metadata: None,
+            name: None,
+            tool_calls: None,
+            function_call: None,
         created_at: Some(Utc::now()),
     };
     
@@ -158,9 +160,12 @@ fn test_parse_tool_message_json() {
 fn test_developer_message() {
     let msg = Message {
         id: "dev_123".to_string(),
-        role: Role::User, // Rust SDK doesn't have Developer role, using User
+        role: Role::Developer, // Now using Developer role
         content: "Developer note".to_string(),
+        name: None,
         tool_call_id: None,
+        tool_calls: None,
+        function_call: None,
         metadata: Some({
             let mut map = HashMap::new();
             map.insert("role_type".to_string(), json!("developer"));
@@ -170,7 +175,7 @@ fn test_developer_message() {
     };
     
     let serialized = serde_json::to_value(&msg).unwrap();
-    assert_eq!(serialized["role"], "user");
+    assert_eq!(serialized["role"], "developer");
     assert_eq!(serialized["content"], "Developer note");
     assert_eq!(serialized["metadata"]["role_type"], "developer");
 }
@@ -202,7 +207,10 @@ fn test_multiple_tool_calls_in_metadata() {
         id: "asst_multi".to_string(),
         role: Role::Assistant,
         content: "I'll perform multiple operations".to_string(),
+        name: None,
         tool_call_id: None,
+        tool_calls: None,
+        function_call: None,
         metadata: Some({
             let mut map = HashMap::new();
             map.insert("tool_calls".to_string(), metadata["tool_calls"].clone());
@@ -229,6 +237,9 @@ fn test_validation_behaviors() {
         content: "".to_string(),
         tool_call_id: None,
         metadata: None,
+            name: None,
+            tool_calls: None,
+            function_call: None,
         created_at: Some(Utc::now()),
     };
     
@@ -242,6 +253,9 @@ fn test_validation_behaviors() {
         content: "Tool result".to_string(),
         tool_call_id: Some("call_789".to_string()),
         metadata: None,
+            name: None,
+            tool_calls: None,
+            function_call: None,
         created_at: Some(Utc::now()),
     };
     
@@ -259,12 +273,11 @@ fn test_message_name_handling() {
         id: "asst_named".to_string(),
         role: Role::Assistant,
         content: "Hello".to_string(),
+        name: Some("AI Assistant".to_string()),
         tool_call_id: None,
-        metadata: Some({
-            let mut map = HashMap::new();
-            map.insert("name".to_string(), metadata["name"].clone());
-            map
-        }),
+        tool_calls: None,
+        function_call: None,
+        metadata: None,
         created_at: Some(Utc::now()),
     };
     

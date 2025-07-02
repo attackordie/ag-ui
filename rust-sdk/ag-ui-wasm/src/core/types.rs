@@ -9,10 +9,19 @@ use wasm_bindgen::prelude::*;
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum Role {
+    Developer,
     User,
     Assistant,
     System,
     Tool,
+}
+
+/// Function call (legacy support)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FunctionCall {
+    pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub arguments: Option<String>,
 }
 
 /// A message in the conversation
@@ -22,7 +31,13 @@ pub struct Message {
     pub role: Role,
     pub content: String,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tool_call_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tool_calls: Option<Vec<ToolCall>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub function_call: Option<FunctionCall>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub metadata: Option<HashMap<String, serde_json::Value>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -35,7 +50,10 @@ impl Message {
             id: Uuid::new_v4().to_string(),
             role,
             content,
+            name: None,
             tool_call_id: None,
+            tool_calls: None,
+            function_call: None,
             metadata: None,
             created_at: Some(Utc::now()),
         }
@@ -75,9 +93,11 @@ pub struct RunAgentInput {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tools: Option<Vec<Tool>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub context: Option<Context>,
+    pub context: Option<Vec<Context>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub state: Option<State>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub forwarded_props: Option<HashMap<String, serde_json::Value>>,
 }
 
 impl RunAgentInput {
@@ -89,6 +109,7 @@ impl RunAgentInput {
             tools: None,
             context: None,
             state: None,
+            forwarded_props: None,
         }
     }
 }
