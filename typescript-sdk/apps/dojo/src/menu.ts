@@ -13,7 +13,7 @@ export const menuIntegrations: MenuIntegrationConfig[] = [
   },
   {
     id: "server-starter-all-features",
-    name: "Server Starter All Features",
+    name: "Server Starter (All Features)",
     features: [
       "agentic_chat",
       "human_in_the_loop",
@@ -29,6 +29,11 @@ export const menuIntegrations: MenuIntegrationConfig[] = [
     features: ["agentic_chat"],
   },
   {
+    id: "mastra-agent-local",
+    name: "Mastra Agent (Local)",
+    features: ["agentic_chat", "shared_state"],
+  },
+  {
     id: "vercel-ai-sdk",
     name: "Vercel AI SDK",
     features: ["agentic_chat"],
@@ -36,6 +41,18 @@ export const menuIntegrations: MenuIntegrationConfig[] = [
   {
     id: "langgraph",
     name: "LangGraph",
+    features: [
+      "agentic_chat",
+      "human_in_the_loop",
+      "agentic_generative_ui",
+      "tool_based_generative_ui",
+      "predictive_state_updates",
+      "shared_state",
+    ],
+  },
+  {
+    id: "langgraph-fastapi",
+    name: "LangGraph FastAPI",
     features: [
       "agentic_chat",
       "human_in_the_loop",
