@@ -1,19 +1,13 @@
 {
-  "name": "create-ag-ui-app",
-  "author": "Markus Ecker <markus.ecker@gmail.com>",
-  "version": "0.0.37",
-  "private": false,
-  "publishConfig": {
-    "access": "public"
-  },
+  "name": "@ag-ui/pydantic-ai",
+  "author": "Steven Hartland <steve@rocketscience.gg>",
+  "version": "0.0.1",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "bin": "./dist/index.mjs",
   "sideEffects": false,
   "files": [
-    "dist/**",
-    "README.md"
+    "dist/**"
   ],
   "scripts": {
     "build": "tsup",
@@ -25,10 +19,10 @@
     "unlink:global": "pnpm unlink --global"
   },
   "dependencies": {
-    "@types/inquirer": "^9.0.8",
-    "commander": "^12.1.0",
-    "inquirer": "^12.6.3",
-    "giget": "2.0.0"
+    "@ag-ui/client": "workspace:*"
+  },
+  "peerDependencies": {
+    "rxjs": "7.8.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
