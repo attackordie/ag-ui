@@ -79,3 +79,11 @@ commit_message.txt
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Rust-SDK synchronization pipeline (local automation only - rust-sdk scoped)
+rust-sdk/.rust-sync-pipeline/
+rust-sdk/.rust-sync-logs/
+rust-sdk/.rust-converter-cache/
+rust-sdk/.rust-sync-state/
+rust-sdk/.rust-pipeline-temp/
+rust-sdk/PRD.md
